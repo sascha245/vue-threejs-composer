@@ -1,0 +1,17 @@
+{
+  "defaultSeverity": "warning",
+  "extends": ["tslint:recommended", "tslint-config-prettier"],
+  "linterOptions": {
+    "exclude": ["node_modules/**"]
+  },
+  "rules": {
+    "interface-name": [true, "never-prefix"],
+    "variable-name": false,
+    // TODO: allow devDependencies only in **/*.spec.ts files:
+    // waiting on https://github.com/palantir/tslint/pull/3708
+    // "no-implicit-dependencies": [true, "dev"],
+    "ban-types": false,
+    "member-ordering": false,
+    "curly": false
+  }
+}
