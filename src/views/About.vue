@@ -21,8 +21,11 @@
             <geometry name="plane" :factory="planeFactory"/>
           </template>
 
+          <behaviour :value="behaviour" :data="{}"/>
+
           <camera name="mainCamera">
             <position :value="{x: 0, y: 10, z: 0}"/>
+            <behaviour :value="behaviour"/>
           </camera>
 
           <light name="light" :factory="lightFactory">

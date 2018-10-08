@@ -1,20 +1,29 @@
+import { EventEmitter } from "events";
 import * as THREE from "three";
 
 import { AssetManager } from "../core/AssetManager";
 import { CameraManager } from "../core/CameraManager";
+import { InputManager } from "../core/InputManager";
 import { SceneManager } from "../core/SceneManager";
+
+export type ThreeApplicationHook = "update";
 
 export class ThreeApplication {
   public assets: AssetManager;
-  public inputs = {};
+  public inputs: InputManager;
   public renderer: THREE.WebGLRenderer;
   public sceneManager: SceneManager;
   public cameraManager: CameraManager;
 
   public disposed = false;
 
+  private _hooks: EventEmitter;
+
   constructor(rendererOptions: THREE.WebGLRendererParameters) {
+    this._hooks = new EventEmitter();
+
     this.assets = new AssetManager();
+    this.inputs = new InputManager();
     this.sceneManager = new SceneManager();
     this.cameraManager = new CameraManager();
     this.renderer = new THREE.WebGLRenderer(rendererOptions);
@@ -28,6 +37,7 @@ export class ThreeApplication {
 
   public dispose() {
     this.renderer.dispose();
+    this.inputs.dispose();
     this.disposed = true;
   }
 
@@ -44,11 +54,21 @@ export class ThreeApplication {
     }
   }
 
+  public on(type: ThreeApplicationHook, fn: (...args: any[]) => void) {
+    this._hooks.on(type, fn);
+  }
+  public off(type: ThreeApplicationHook, fn: (...args: any[]) => void) {
+    this._hooks.removeListener(type, fn);
+  }
+
   public update(deltaTime: number) {
     const scene = this.sceneManager.active;
     const camera = this.cameraManager.main;
     if (this.renderer) {
       this.renderer.clearColor();
+      this.inputs.update();
+
+      this._hooks.emit("update", deltaTime);
 
       if (scene && camera) {
         this.renderer.render(scene, camera);

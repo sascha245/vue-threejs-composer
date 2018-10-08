@@ -3,6 +3,8 @@ import { Component, Vue } from "vue-property-decorator";
 
 import { components, GeometryFactory, LightFactory, MaterialFactory } from "@/vue-three";
 
+import { MyBehaviour } from "./MyBehaviour";
+
 console.log(components);
 
 @Component({
@@ -17,6 +19,8 @@ export default class About extends Vue {
   public waterMaterialFactory: MaterialFactory | null = null;
 
   public lightFactory: LightFactory | null = null;
+
+  public behaviour = MyBehaviour;
 
   public canvas: HTMLCanvasElement | null = null;
 
