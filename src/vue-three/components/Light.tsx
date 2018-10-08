@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import { Component, Inject, Prop, Vue, Watch } from "vue-property-decorator";
+import { Component, Inject, Prop, Provide, Vue, Watch } from "vue-property-decorator";
 
 import { ThreeApplication } from "../core";
 import { LightFactory } from "../types";
@@ -18,65 +18,29 @@ export class Light extends Vue {
   @Prop({ default: false, type: Boolean })
   private castShadow!: boolean;
 
-  @Prop({
-    default() {
-      return {
-        x: 0,
-        y: 0,
-        z: 0
-      };
-    }
-  })
-  private position!: { x: number; y: number; z: number };
-
-  @Prop({
-    default() {
-      return {
-        x: 0,
-        y: 0,
-        z: 0
-      };
-    }
-  })
-  private rotation!: { x: number; y: number; z: number };
-
   @Prop({ required: true, type: Function })
   public factory!: LightFactory;
 
+  @Provide("object")
+  public provideObject = this.object;
+
   private m_light!: THREE.Light;
-
-  @Watch("position", { deep: true })
-  private onChangePosition() {
-    this.m_light.position.set(
-      this.position.x,
-      this.position.y,
-      this.position.z
-    );
-  }
-
-  @Watch("rotation", { deep: true })
-  private onChangeRotation() {
-    const rad = THREE.Math.degToRad;
-    this.m_light.rotation.set(
-      rad(this.rotation.x),
-      rad(this.rotation.y),
-      rad(this.rotation.z)
-    );
-  }
+  private m_created = false;
 
   @Watch("castShadow")
   private onChangeCastShadow() {
     this.m_light.castShadow = this.castShadow;
   }
 
-  public async mounted() {
-    this.m_light = await this.factory();
+  public object(): THREE.Object3D {
+    return this.m_light;
+  }
 
-    console.log("light mounted", this.name, this.m_light);
-    this.onChangePosition();
-    this.onChangeRotation();
+  public async created() {
+    this.m_light = await this.factory();
     this.onChangeCastShadow();
     this.scene().add(this.m_light);
+    this.m_created = true;
   }
 
   public beforeDestroy() {
@@ -88,6 +52,14 @@ export class Light extends Vue {
   }
 
   public render(h: any) {
-    return <div className="light">Light {this.name}</div>;
+    if (!this.m_created) {
+      return null;
+    }
+    return (
+      <div className="light">
+        <span>Light {this.name}</span>
+        <ul>{this.$slots.default}</ul>
+      </div>
+    );
   }
 }

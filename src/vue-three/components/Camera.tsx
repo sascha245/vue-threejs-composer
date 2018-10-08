@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import { Component, Inject, Prop, Vue, Watch } from "vue-property-decorator";
+import { Component, Inject, Prop, Provide, Vue, Watch } from "vue-property-decorator";
 
 import { ThreeApplication } from "../core";
 import { OrbitControls } from "../core/OrbitCamera";
@@ -15,49 +15,15 @@ export class Camera extends Vue {
   @Prop({ default: true, type: Boolean })
   private main!: boolean;
 
-  @Prop({
-    default() {
-      return {
-        x: 0,
-        y: 0,
-        z: 0
-      };
-    }
-  })
-  private position!: { x: number; y: number; z: number };
-
-  @Prop({
-    default() {
-      return {
-        x: 0,
-        y: 0,
-        z: 0
-      };
-    }
-  })
-  private rotation!: { x: number; y: number; z: number };
+  @Provide("object")
+  public provideObject = this.object;
 
   private m_isMain = false;
-  private m_camera!: THREE.Camera;
+  private m_camera!: THREE.PerspectiveCamera;
   private m_controls?: OrbitControls;
 
-  @Watch("position", { deep: true })
-  private onChangePosition() {
-    this.m_camera.position.set(
-      this.position.x,
-      this.position.y,
-      this.position.z
-    );
-  }
-
-  @Watch("rotation", { deep: true })
-  private onChangeRotation() {
-    const rad = THREE.Math.degToRad;
-    this.m_camera.rotation.set(
-      rad(this.rotation.x),
-      rad(this.rotation.y),
-      rad(this.rotation.z)
-    );
+  public object(): THREE.Object3D {
+    return this.m_camera;
   }
 
   @Watch("main")
@@ -96,7 +62,8 @@ export class Camera extends Vue {
     manager.main = this.m_camera;
   }
 
-  public mounted() {
+  public created() {
+    console.log("camera created");
     const { width, height } = this.app().renderer.getSize();
     const viewAngle = 60;
     const nearClipping = 0.1;
@@ -109,14 +76,16 @@ export class Camera extends Vue {
       farClipping
     );
 
-    this.onChangePosition();
-    this.onChangeRotation();
     this.m_controls = new OrbitControls(
       this.m_camera,
       this.app().renderer.domElement
     );
 
     this.onChangeMain();
+  }
+
+  public mounted() {
+    console.log("camera mounted");
   }
 
   public beforeDestroy() {
@@ -131,6 +100,11 @@ export class Camera extends Vue {
     if (!this.main) {
       return null;
     }
-    return <div className="camera">Camera</div>;
+    return (
+      <div className="camera">
+        <span>Camera</span>
+        <ul>{this.$slots.default}</ul>
+      </div>
+    );
   }
 }

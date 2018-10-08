@@ -21,19 +21,30 @@
             <geometry name="plane" :factory="planeFactory"/>
           </template>
 
-          <camera name="mainCamera" :position="{x: 0, y: 10, z: 0}"/>
-          <light name="light" :factory="lightFactory" castShadow :position="{x: 0, y: 10, z: 0}"/>
-          <mesh name="waterPlane" receiveShadow geometry="plane" material="waterMat" :rotation="{ x: -90, y: 0, z: 0 }"/>
+          <camera name="mainCamera">
+            <position :value="{x: 0, y: 10, z: 0}"/>
+          </camera>
+
+          <light name="light" :factory="lightFactory">
+            <position :value="{x: 0, y: 10, z: 0}"/>
+            <shadows cast/>
+          </light>
+
+          <mesh name="waterPlane" geometry="plane" material="waterMat">
+            <rotation :value="{ x: -90, y: 0, z: 0 }"/>
+            <shadows receive/>
+          </mesh>
 
           <mesh v-for="(field, index) in scene1.fields"
             :key="field.x + ' ' + field.y"
             :name="'field-'+index"
-            castShadow
-            receiveShadow
             geometry="cube"
             material="cubeMat"
-            :position="{ x: field.x * 2, y: 0, z: field.y * 2}"
-            />
+            >
+            <position :value="{ x: field.x * 2, y: 0, z: field.y * 2}"/>
+            <scale :value="{ x: 1.2, y: 0.7, z: 1.2}"/>
+            <shadows cast receive/>
+          </mesh>
         </scene>
 
         <scene :name="scene2.name" :active.sync="scene2.active">

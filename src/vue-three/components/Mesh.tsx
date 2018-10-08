@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import { Component, Inject, Prop, Vue, Watch } from "vue-property-decorator";
+import { Component, Inject, Prop, Provide, Vue, Watch } from "vue-property-decorator";
 
 import { AssetTypes, GeometryType, MaterialType } from "@/vue-three/types";
 
@@ -22,62 +22,17 @@ export class Mesh extends Vue {
   @Prop({ required: true, type: String })
   private geometry!: string;
 
-  @Prop({
-    default() {
-      return {
-        x: 0,
-        y: 0,
-        z: 0
-      };
-    }
-  })
-  private position!: { x: number; y: number; z: number };
-
-  @Prop({
-    default() {
-      return {
-        x: 0,
-        y: 0,
-        z: 0
-      };
-    }
-  })
-  private rotation!: { x: number; y: number; z: number };
-
-  @Prop({ default: false, type: Boolean })
-  private receiveShadow!: boolean;
-
-  @Prop({ default: false, type: Boolean })
-  private castShadow!: boolean;
+  @Provide("object")
+  private provideObject = this.object;
 
   private m_mesh!: THREE.Mesh;
+  private m_created = false;
 
-  @Watch("receiveShadow")
-  private onChangeReceiveShadow() {
-    this.m_mesh.receiveShadow = this.receiveShadow;
+  public object(): THREE.Object3D {
+    return this.m_mesh;
   }
 
-  @Watch("castShadow")
-  private onChangeCastShadow() {
-    this.m_mesh.castShadow = this.castShadow;
-  }
-
-  @Watch("position", { deep: true })
-  private onChangePosition() {
-    this.m_mesh.position.set(this.position.x, this.position.y, this.position.z);
-  }
-
-  @Watch("rotation", { deep: true })
-  private onChangeRotation() {
-    const rad = THREE.Math.degToRad;
-    this.m_mesh.rotation.set(
-      rad(this.rotation.x),
-      rad(this.rotation.y),
-      rad(this.rotation.z)
-    );
-  }
-
-  public async mounted() {
+  public async created() {
     const materialProm = this.app().assets.get(
       this.material,
       AssetTypes.MATERIAL
@@ -110,11 +65,9 @@ export class Mesh extends Vue {
       geometry as GeometryType,
       material as MaterialType
     );
-    this.onChangePosition();
-    this.onChangeRotation();
-    this.onChangeReceiveShadow();
-    this.onChangeCastShadow();
     this.scene().add(this.m_mesh);
+
+    this.m_created = true;
   }
 
   public beforeDestroy() {
@@ -126,6 +79,14 @@ export class Mesh extends Vue {
   }
 
   public render(h: any) {
-    return <div className="mesh">Mesh {this.name}</div>;
+    if (!this.m_created) {
+      return null;
+    }
+    return (
+      <div className="mesh">
+        <span>Mesh {this.name}</span>
+        <ul>{this.$slots.default}</ul>
+      </div>
+    );
   }
 }

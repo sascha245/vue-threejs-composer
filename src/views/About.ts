@@ -3,6 +3,8 @@ import { Component, Vue } from "vue-property-decorator";
 
 import { components, GeometryFactory, LightFactory, MaterialFactory } from "@/vue-three";
 
+console.log(components);
+
 @Component({
   components: {
     ...components
