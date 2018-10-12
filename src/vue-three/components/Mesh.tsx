@@ -1,18 +1,12 @@
 import * as THREE from "three";
-import { Component, Inject, Prop, Provide, Vue, Watch } from "vue-property-decorator";
+import { Component, Mixins, Prop, Provide } from "vue-property-decorator";
 
 import { AssetTypes, GeometryType, MaterialType } from "@/vue-three/types";
 
-import { ThreeApplication } from "../core";
+import { ThreeComponent, ThreeSceneComponent } from "./base";
 
 @Component
-export class Mesh extends Vue {
-  @Inject()
-  private app!: () => ThreeApplication;
-
-  @Inject()
-  private scene!: () => THREE.Scene;
-
+export class Mesh extends Mixins(ThreeComponent, ThreeSceneComponent) {
   @Prop({ required: true, type: String })
   private name!: string;
 

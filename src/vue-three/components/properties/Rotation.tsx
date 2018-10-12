@@ -1,11 +1,10 @@
 import * as THREE from "three";
-import { Component, Inject, Prop, Vue, Watch } from "vue-property-decorator";
+import { Component, Mixins, Prop, Watch } from "vue-property-decorator";
+
+import { ThreeObjectComponent } from "../base";
 
 @Component
-export class Rotation extends Vue {
-  @Inject()
-  protected object!: () => THREE.Object3D;
-
+export class Rotation extends Mixins(ThreeObjectComponent) {
   @Prop({
     default() {
       return {
@@ -43,16 +42,19 @@ export class Rotation extends Vue {
   }
 
   public render(h: any) {
-    let vec = this.value;
-    if (this.rad) {
-      const deg = THREE.Math.radToDeg;
-      vec = {
-        x: deg(this.value.x),
-        y: deg(this.value.y),
-        z: deg(this.value.z)
-      };
-    }
-    const valueStringify = `[${vec.x}, ${vec.y}, ${vec.z}]`;
+    const vec = this.value;
+    // if (this.rad) {
+    //   const deg = THREE.Math.radToDeg;
+    //   vec = {
+    //     x: deg(this.value.x),
+    //     y: deg(this.value.y),
+    //     z: deg(this.value.z)
+    //   };
+    // }
+
+    const type = this.rad ? "rad" : "deg";
+
+    const valueStringify = `${type}[${vec.x}, ${vec.y}, ${vec.z}]`;
     return <li>Rotation {valueStringify}</li>;
   }
 }

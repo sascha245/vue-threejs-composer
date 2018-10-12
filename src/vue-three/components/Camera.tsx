@@ -1,26 +1,26 @@
 import * as THREE from "three";
-import { Component, Inject, Prop, Provide, Vue, Watch } from "vue-property-decorator";
+import { Component, Mixins, Prop, Provide, Vue, Watch } from "vue-property-decorator";
 
-import { ThreeApplication } from "../core";
-import { OrbitControls } from "../core/OrbitCamera";
+import { CameraFactory } from "../types";
+import { ThreeComponent, ThreeSceneComponent } from "./base";
 
 @Component
-export class Camera extends Vue {
-  @Inject()
-  protected app!: () => ThreeApplication;
-
+export class Camera extends Mixins(ThreeComponent, ThreeSceneComponent) {
   @Prop({ required: true })
   private name!: string;
 
   @Prop({ default: true, type: Boolean })
   private main!: boolean;
 
+  @Prop({ required: true, type: Function })
+  public factory!: CameraFactory;
+
   @Provide("object")
   public provideObject = this.object;
 
   private m_isMain = false;
-  private m_camera!: THREE.PerspectiveCamera;
-  private m_controls?: OrbitControls;
+  private m_created = false;
+  private m_camera!: THREE.Camera;
 
   public object(): THREE.Object3D {
     return this.m_camera;
@@ -62,42 +62,20 @@ export class Camera extends Vue {
     manager.main = this.m_camera;
   }
 
-  public created() {
+  public async created() {
     console.log("camera created");
-    const { width, height } = this.app().renderer.getSize();
-    const viewAngle = 60;
-    const nearClipping = 0.1;
-    const farClipping = 1000;
-
-    this.m_camera = new THREE.PerspectiveCamera(
-      viewAngle,
-      width / height,
-      nearClipping,
-      farClipping
-    );
-
-    this.m_controls = new OrbitControls(
-      this.m_camera,
-      this.app().renderer.domElement
-    );
-
+    this.m_camera = await this.factory(this.app().renderer.getSize());
     this.onChangeMain();
-  }
 
-  public mounted() {
-    console.log("camera mounted");
+    this.m_created = true;
   }
 
   public beforeDestroy() {
     this.onDeactivate();
-    if (this.m_camera && this.m_controls) {
-      this.m_controls.dispose();
-      this.m_controls = undefined;
-    }
   }
 
   public render(h: any) {
-    if (!this.main) {
+    if (!this.main || !this.m_created) {
       return null;
     }
     return (

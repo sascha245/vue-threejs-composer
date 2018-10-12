@@ -6,8 +6,8 @@
     <div>
       <button @click="changeScene(scene1)">Scene 1</button>
       <button @click="changeScene(scene2)">Scene 2</button>
-
     </div>
+
     <canvas ref="canvas" class="webglCanvas"></canvas>
     <div v-if="canvas">
       <three :canvas="canvas" antialias>
@@ -21,11 +21,11 @@
             <geometry name="plane" :factory="planeFactory"/>
           </template>
 
-          <behaviour :value="behaviour" :data="{}"/>
+          <camera name="mainCamera" :factory="cameraFactory">
+            <position :value="scene1.camera.position"/>
+            <rotation :value="scene1.camera.rotation" rad/>
 
-          <camera name="mainCamera">
-            <position :value="{x: 0, y: 10, z: 0}"/>
-            <behaviour :value="behaviour"/>
+            <my-behaviour :data="scene1.camera"/>
           </camera>
 
           <light name="light" :factory="lightFactory">
@@ -38,9 +38,9 @@
             <shadows receive/>
           </mesh>
 
-          <mesh v-for="(field, index) in scene1.fields"
-            :key="field.x + ' ' + field.y"
-            :name="'field-'+index"
+          <mesh v-for="field in scene1.fields"
+            :key="field.id"
+            :name="'field-'+field.id"
             geometry="cube"
             material="cubeMat"
             >

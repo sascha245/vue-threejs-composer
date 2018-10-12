@@ -1,6 +1,6 @@
 import { Component, Prop, Provide, Vue, Watch } from "vue-property-decorator";
 
-import { ThreeApplication } from "../core/ThreeApplication";
+import { Application } from "../core";
 
 @Component
 export class Three extends Vue {
@@ -18,7 +18,7 @@ export class Three extends Vue {
   @Provide("app")
   public provideApp = this.app;
 
-  private _app!: ThreeApplication;
+  private _app!: Application;
   private _animationFrame?: number;
 
   public app() {
@@ -26,7 +26,7 @@ export class Three extends Vue {
   }
 
   public async created() {
-    this._app = new ThreeApplication({
+    this._app = new Application({
       antialias: this.antialias,
       canvas: this.canvas
     });

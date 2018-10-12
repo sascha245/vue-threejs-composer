@@ -1,11 +1,9 @@
-import * as THREE from "three";
-import { Component, Inject, Prop, Vue, Watch } from "vue-property-decorator";
+import { Component, Mixins, Prop, Watch } from "vue-property-decorator";
+
+import { ThreeObjectComponent } from "../base";
 
 @Component
-export class Shadows extends Vue {
-  @Inject()
-  protected object!: () => THREE.Object3D;
-
+export class Shadows extends Mixins(ThreeObjectComponent) {
   @Prop({
     default: false,
     type: Boolean

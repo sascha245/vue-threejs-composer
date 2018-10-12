@@ -1,15 +1,16 @@
 import * as THREE from "three";
 import { Component, Vue } from "vue-property-decorator";
 
-import { components, GeometryFactory, LightFactory, MaterialFactory } from "@/vue-three";
+import {
+    CameraFactory, components, GeometryFactory, LightFactory, MaterialFactory
+} from "@/vue-three";
 
 import { MyBehaviour } from "./MyBehaviour";
 
-console.log(components);
-
 @Component({
   components: {
-    ...components
+    ...components,
+    MyBehaviour
   }
 })
 export default class About extends Vue {
@@ -19,24 +20,39 @@ export default class About extends Vue {
   public waterMaterialFactory: MaterialFactory | null = null;
 
   public lightFactory: LightFactory | null = null;
-
-  public behaviour = MyBehaviour;
+  public cameraFactory: CameraFactory | null = null;
 
   public canvas: HTMLCanvasElement | null = null;
 
   public scene1 = {
     name: "First scene",
     active: true,
+    camera: {
+      position: {
+        x: 0,
+        y: 10,
+        z: 0
+      },
+      rotation: {
+        x: 0,
+        y: 0,
+        z: 0
+      }
+    },
+
     fields: [
       {
+        id: "someId-0",
         x: 0,
         y: 0
       },
       {
+        id: "someId-1",
         x: 1,
         y: 0
       },
       {
+        id: "someId-2",
         x: 2,
         y: 0
       }
@@ -96,6 +112,18 @@ export default class About extends Vue {
       light.shadow.camera.far = 500; // default
 
       return light;
+    };
+
+    this.cameraFactory = async ({ width, height }) => {
+      const viewAngle = 60;
+      const nearClipping = 0.1;
+      const farClipping = 1000;
+      return new THREE.PerspectiveCamera(
+        viewAngle,
+        width / height,
+        nearClipping,
+        farClipping
+      );
     };
   }
 

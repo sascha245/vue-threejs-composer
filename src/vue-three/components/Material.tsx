@@ -1,13 +1,10 @@
-import { Component, Inject, Prop, Vue } from "vue-property-decorator";
+import { Component, Mixins, Prop } from "vue-property-decorator";
 
-import { ThreeAssetComponent } from "../core";
 import { AssetTypes, MaterialFactory, MaterialType } from "../types";
+import { ThreeAssetComponent, ThreeComponent } from "./base";
 
 @Component
-export class Material extends ThreeAssetComponent<MaterialType> {
-  // @Inject()
-  // private app!: () => ThreeApplication;
-
+export class Material extends Mixins(ThreeComponent, ThreeAssetComponent) {
   @Prop({ required: true, type: String })
   private name!: string;
 

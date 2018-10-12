@@ -9,9 +9,7 @@
     "test:unit": "vue-cli-service test:unit"
   },
   "dependencies": {
-    "@types/events": "^1.2.0",
     "@types/three": "^0.92.24",
-    "events": "^3.0.0",
     "three": "^0.97.0",
     "vue": "^2.5.17",
     "vue-class-component": "^6.0.0",

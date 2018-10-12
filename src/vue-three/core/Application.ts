@@ -6,9 +6,9 @@ import { CameraManager } from "../core/CameraManager";
 import { InputManager } from "../core/InputManager";
 import { SceneManager } from "../core/SceneManager";
 
-export type ThreeApplicationHook = "update";
+export type ApplicationHook = "update";
 
-export class ThreeApplication {
+export class Application {
   public assets: AssetManager;
   public inputs: InputManager;
   public renderer: THREE.WebGLRenderer;
@@ -54,10 +54,10 @@ export class ThreeApplication {
     }
   }
 
-  public on(type: ThreeApplicationHook, fn: (...args: any[]) => void) {
+  public on(type: ApplicationHook, fn: (...args: any[]) => void) {
     this._hooks.on(type, fn);
   }
-  public off(type: ThreeApplicationHook, fn: (...args: any[]) => void) {
+  public off(type: ApplicationHook, fn: (...args: any[]) => void) {
     this._hooks.removeListener(type, fn);
   }
 

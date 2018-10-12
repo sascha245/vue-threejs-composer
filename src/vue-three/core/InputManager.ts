@@ -1,3 +1,5 @@
+import * as THREE from "three";
+
 const NAVIGATOR_FIREFOX =
   navigator.userAgent.toLowerCase().indexOf("firefox") > -1;
 
@@ -17,20 +19,12 @@ export class InputManager {
   private realMouseStates: boolean[] = new Array(3);
 
   // mouse position
-  private mousePosition = {
-    x: 0,
-    y: 0
-  };
+  public mousePosition = new THREE.Vector2(0, 0);
+  public lastMousePosition = new THREE.Vector2(0, 0);
+  private realMousePosition = new THREE.Vector2(0, 0);
 
-  private lastMousePosition = {
-    x: 0,
-    y: 0
-  };
-
-  private realMousePosition = {
-    x: 0,
-    y: 0
-  };
+  public mouseMoving = false;
+  private realMouseMoving = false;
 
   constructor() {
     // initializes all the keyStates to their resting
@@ -55,21 +49,27 @@ export class InputManager {
   }
 
   private onKeyDown = (e: KeyboardEvent) => {
+    // console.log("keydown", e);
     if (e.which === 18) e.preventDefault();
     this.realKeyStates[e.which] = true;
   };
   private onKeyUp = (e: KeyboardEvent) => {
+    // console.log("keyup", e);
     this.realKeyStates[e.which] = false;
   };
   private onMouseDown = (e: MouseEvent) => {
+    // console.log("mousedown", e);
     this.realMouseStates[e.button] = true;
   };
   private onMouseUp = (e: MouseEvent) => {
+    // console.log("mouseup", e);
     this.realMouseStates[e.button] = false;
   };
   private onMouseMove = (e: MouseEvent) => {
+    // console.log("mousemove", e);
     this.realMousePosition.x = e.clientX;
     this.realMousePosition.y = e.clientY;
+    this.realMouseMoving = true;
   };
 
   public dispose() {
@@ -111,7 +111,7 @@ export class InputManager {
     // set previous mouseStates to current keyStates
     const tmpMouses = this.previousMouseStates;
     this.previousMouseStates = this.mouseStates;
-    this.keyStates = tmpMouses;
+    this.mouseStates = tmpMouses;
 
     // update mouse positions
     this.lastMousePosition.x = this.mousePosition.x;
@@ -128,6 +128,9 @@ export class InputManager {
     for (let i = 0; i < this.keyStates.length; i++) {
       this.mouseStates[i] = this.realMouseStates[i];
     }
+
+    this.mouseMoving = this.realMouseMoving;
+    this.realMouseMoving = false;
   }
 
   private checkCombo(
@@ -183,7 +186,7 @@ export class InputManager {
       case "ARROWUP":
         return ["key", 38];
       case "ARROWRIGHT":
-        return ["key", 38];
+        return ["key", 39];
       case "ARROWDOWN":
         return ["key", 40];
       case "INSERT":

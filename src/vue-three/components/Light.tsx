@@ -1,17 +1,11 @@
 import * as THREE from "three";
-import { Component, Inject, Prop, Provide, Vue, Watch } from "vue-property-decorator";
+import { Component, Mixins, Prop, Provide, Watch } from "vue-property-decorator";
 
-import { ThreeApplication } from "../core";
 import { LightFactory } from "../types";
+import { ThreeComponent, ThreeSceneComponent } from "./base";
 
 @Component
-export class Light extends Vue {
-  @Inject()
-  protected app!: () => ThreeApplication;
-
-  @Inject()
-  protected scene!: () => THREE.Scene;
-
+export class Light extends Mixins(ThreeComponent, ThreeSceneComponent) {
   @Prop({ required: true })
   private name!: string;
 

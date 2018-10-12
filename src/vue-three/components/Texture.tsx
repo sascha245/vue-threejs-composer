@@ -1,10 +1,10 @@
-import { Component, Prop } from "vue-property-decorator";
+import { Component, Mixins, Prop } from "vue-property-decorator";
 
-import { ThreeAssetComponent } from "../core";
 import { AssetTypes, TextureFactory, TextureType } from "../types";
+import { ThreeAssetComponent, ThreeComponent } from "./base";
 
 @Component
-export class Texture extends ThreeAssetComponent<TextureType> {
+export class Texture extends Mixins(ThreeComponent, ThreeAssetComponent) {
   @Prop({ required: true, type: String })
   private name!: string;
 
