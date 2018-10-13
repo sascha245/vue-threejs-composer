@@ -6,5 +6,7 @@ export * from "./Scene";
 export * from "./Three";
 export * from "./Camera";
 export * from "./Light";
+export * from "./Fog";
+export * from "./Group";
 
 export * from "./properties";

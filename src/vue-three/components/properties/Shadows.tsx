@@ -18,14 +18,19 @@ export class Shadows extends Mixins(ThreeObjectComponent) {
 
   @Watch("receive")
   private onChangeReceive() {
-    this.object().receiveShadow = this.receive;
+    this.object!().receiveShadow = this.receive;
   }
   @Watch("cast")
   private onChangeCast() {
-    this.object().castShadow = this.cast;
+    this.object!().castShadow = this.cast;
   }
 
   public created() {
+    if (!this.object) {
+      throw new Error(
+        "Shadows property can only be added as child to an object component"
+      );
+    }
     console.log("shadow created");
     this.onChangeReceive();
     this.onChangeCast();

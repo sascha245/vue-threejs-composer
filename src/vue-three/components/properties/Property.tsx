@@ -2,10 +2,8 @@ import { Component, Mixins, Prop, Watch } from "vue-property-decorator";
 
 import { ThreeObjectComponent } from "../base";
 
-
 @Component
 export class Property extends Mixins(ThreeObjectComponent) {
-
   @Prop({
     required: true,
     type: String
@@ -19,11 +17,16 @@ export class Property extends Mixins(ThreeObjectComponent) {
 
   @Watch("value", { deep: true })
   private onChange() {
-    const obj: any = this.object();
+    const obj: any = this.object!();
     obj[this.name] = this.value;
   }
 
   public created() {
+    if (!this.object) {
+      throw new Error(
+        "Property can only be added as child to an object component"
+      );
+    }
     this.onChange();
   }
 

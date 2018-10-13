@@ -13,13 +13,13 @@ export class Scene extends Mixins(ThreeComponent) {
   public active!: boolean;
 
   @Provide("scene")
-  public provideScene = this.scene;
+  public provideScene = this.getScene;
 
   private m_isReady = false;
   private m_isActive = false;
   private m_scene?: THREE.Scene;
 
-  public scene() {
+  public getScene() {
     return this.m_scene;
   }
 
@@ -43,15 +43,18 @@ export class Scene extends Mixins(ThreeComponent) {
     }
   }
 
-  public onDeactivate() {
+  public async onDeactivate() {
     console.log("deactivate scene", this.name);
 
     const manager = this.app().sceneManager;
     if (this.m_scene === manager.active) {
       manager.active = undefined;
     }
-    this.m_scene = undefined;
     this.m_isReady = false;
+
+    await Vue.nextTick();
+
+    this.m_scene = undefined;
   }
 
   public async onActivate() {

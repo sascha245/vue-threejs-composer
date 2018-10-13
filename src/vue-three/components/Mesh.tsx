@@ -3,10 +3,14 @@ import { Component, Mixins, Prop, Provide } from "vue-property-decorator";
 
 import { AssetTypes, GeometryType, MaterialType } from "@/vue-three/types";
 
-import { ThreeComponent, ThreeSceneComponent } from "./base";
+import { ThreeComponent, ThreeObjectComponent, ThreeSceneComponent } from "./base";
 
 @Component
-export class Mesh extends Mixins(ThreeComponent, ThreeSceneComponent) {
+export class Mesh extends Mixins(
+  ThreeComponent,
+  ThreeSceneComponent,
+  ThreeObjectComponent
+) {
   @Prop({ required: true, type: String })
   private name!: string;
 
@@ -17,16 +21,22 @@ export class Mesh extends Mixins(ThreeComponent, ThreeSceneComponent) {
   private geometry!: string;
 
   @Provide("object")
-  private provideObject = this.object;
+  private provideObject = this.getObject;
 
   private m_mesh!: THREE.Mesh;
   private m_created = false;
 
-  public object(): THREE.Object3D {
+  public getObject(): THREE.Object3D {
     return this.m_mesh;
   }
 
   public async created() {
+    if (!this.scene && !this.object) {
+      throw new Error(
+        "Mesh component can only be added as child to an object or mesh component"
+      );
+    }
+
     const materialProm = this.app().assets.get(
       this.material,
       AssetTypes.MATERIAL
@@ -59,17 +69,17 @@ export class Mesh extends Mixins(ThreeComponent, ThreeSceneComponent) {
       geometry as GeometryType,
       material as MaterialType
     );
-    this.scene().add(this.m_mesh);
+
+    const parent = this.object ? this.object() : this.scene();
+    parent.add(this.m_mesh);
 
     this.m_created = true;
   }
 
   public beforeDestroy() {
     console.log("mesh beforeDestroy");
-    if (this.scene()) {
-      console.log("mesh remove from scene");
-      this.scene().remove(this.m_mesh);
-    }
+    const parent = this.object ? this.object() : this.scene();
+    parent.remove(this.m_mesh);
   }
 
   public render(h: any) {

@@ -3,6 +3,6 @@ import { Component, Inject, Vue } from "vue-property-decorator";
 
 @Component
 export class ThreeSceneComponent extends Vue {
-  @Inject()
+  @Inject({ default: undefined })
   protected scene!: () => Scene;
 }

@@ -26,10 +26,10 @@ export class Rotation extends Mixins(ThreeObjectComponent) {
   @Watch("value", { deep: true })
   private onChange() {
     if (this.rad) {
-      this.object().rotation.set(this.value.x, this.value.y, this.value.z);
+      this.object!().rotation.set(this.value.x, this.value.y, this.value.z);
     } else {
       const rad = THREE.Math.degToRad;
-      this.object().rotation.set(
+      this.object!().rotation.set(
         rad(this.value.x),
         rad(this.value.y),
         rad(this.value.z)
@@ -38,6 +38,11 @@ export class Rotation extends Mixins(ThreeObjectComponent) {
   }
 
   public created() {
+    if (!this.object) {
+      throw new Error(
+        "Rotation property can only be added as child to an object component"
+      );
+    }
     this.onChange();
   }
 

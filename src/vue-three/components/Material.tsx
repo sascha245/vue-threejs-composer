@@ -11,8 +11,8 @@ export class Material extends Mixins(ThreeComponent, ThreeAssetComponent) {
   @Prop({ required: true, type: Function })
   private factory!: MaterialFactory;
 
-  public mounted() {
-    console.log("mounted material", this.name);
+  public created() {
+    console.log("created material", this.name);
     this.asset = this.factory();
     this.app().assets.add(this.name, AssetTypes.MATERIAL, this.asset);
   }

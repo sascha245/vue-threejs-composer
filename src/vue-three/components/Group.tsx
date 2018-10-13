@@ -1,11 +1,10 @@
 import * as THREE from "three";
-import { Component, Mixins, Prop, Provide, Watch } from "vue-property-decorator";
+import { Component, Mixins, Prop, Provide } from "vue-property-decorator";
 
-import { LightFactory } from "../types";
 import { ThreeComponent, ThreeObjectComponent, ThreeSceneComponent } from "./base";
 
 @Component
-export class Light extends Mixins(
+export class Group extends Mixins(
   ThreeComponent,
   ThreeSceneComponent,
   ThreeObjectComponent
@@ -13,37 +12,34 @@ export class Light extends Mixins(
   @Prop({ required: true })
   private name!: string;
 
-  @Prop({ required: true, type: Function })
-  public factory!: LightFactory;
-
   @Provide("object")
   public provideObject = this.getObject;
 
-  private m_light!: THREE.Light;
+  private m_group!: THREE.Group;
   private m_created = false;
 
   public getObject(): THREE.Object3D {
-    return this.m_light;
+    return this.m_group;
   }
 
   public async created() {
     if (!this.scene && !this.object) {
       throw new Error(
-        "Light component can only be added as child to an object or scene component"
+        "Group component can only be added as child to an object or scene component"
       );
     }
 
-    this.m_light = await this.factory();
+    this.m_group = new THREE.Group();
     const parent = this.object ? this.object() : this.scene();
-    parent.add(this.m_light);
+    parent.add(this.m_group);
 
     this.m_created = true;
   }
 
   public beforeDestroy() {
-    console.log("light beforeDestroy");
+    console.log("group beforeDestroy");
     const parent = this.object ? this.object() : this.scene();
-    parent.remove(this.m_light);
+    parent.remove(this.m_group);
   }
 
   public render(h: any) {
@@ -51,8 +47,8 @@ export class Light extends Mixins(
       return null;
     }
     return (
-      <div className="light">
-        <span>Light {this.name}</span>
+      <div className="group">
+        <span>Group {this.name}</span>
         <ul>{this.$slots.default}</ul>
       </div>
     );

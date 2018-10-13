@@ -21,6 +21,8 @@
             <geometry name="plane" :factory="planeFactory"/>
           </template>
 
+          <fog exp2/>
+
           <camera name="mainCamera" :factory="cameraFactory">
             <position :value="scene1.camera.position"/>
             <rotation :value="scene1.camera.rotation" rad/>
@@ -33,21 +35,26 @@
             <shadows cast/>
           </light>
 
-          <mesh name="waterPlane" geometry="plane" material="waterMat">
-            <rotation :value="{ x: -90, y: 0, z: 0 }"/>
-            <shadows receive/>
-          </mesh>
+          <group name="group">
+            <position :value="{ x: 0, y: 0, z: 0 }"/>
 
-          <mesh v-for="field in scene1.fields"
-            :key="field.id"
-            :name="'field-'+field.id"
-            geometry="cube"
-            material="cubeMat"
-            >
-            <position :value="{ x: field.x * 2, y: 0, z: field.y * 2}"/>
-            <scale :value="{ x: 1.2, y: 0.7, z: 1.2}"/>
-            <shadows cast receive/>
-          </mesh>
+            <mesh name="waterPlane" geometry="plane" material="waterMat">
+              <rotation :value="{ x: -90, y: 0, z: 0 }"/>
+              <shadows receive/>
+            </mesh>
+
+            <mesh v-for="field in scene1.fields"
+              :key="field.id"
+              :name="'field-'+field.id"
+              geometry="cube"
+              material="cubeMat"
+              >
+              <position :value="{ x: field.x * 2, y: 0, z: field.y * 2}"/>
+              <scale :value="{ x: 1.2, y: 0.7, z: 1.2}"/>
+              <shadows cast receive/>
+            </mesh>
+          </group>
+
         </scene>
 
         <scene :name="scene2.name" :active.sync="scene2.active">

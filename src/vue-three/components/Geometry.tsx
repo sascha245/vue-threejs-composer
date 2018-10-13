@@ -11,8 +11,8 @@ export class Geometry extends Mixins(ThreeComponent, ThreeAssetComponent) {
   @Prop({ required: true, type: Function })
   public factory!: GeometryFactory;
 
-  public async mounted() {
-    console.log("mounted geometry", this.name);
+  public async created() {
+    console.log("created geometry", this.name);
     this.asset = this.factory();
     this.app().assets.add(this.name, AssetTypes.GEOMETRY, this.asset);
   }
