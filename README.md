@@ -1,29 +1,68 @@
 # Vue Three.js
 
-/!\ This module is still in development and not usable yet as a library.
+/!\ This module is still in development.
 
 Contains Vuejs bindings for creating and interacting with Threejs scenes and objects in a easy and reactive way.
 
 **Features:**
 
-- Only core features will be present in this package
-- Asset manager with preload possibility (loading events not done yet)
-- Scene manager with scene switching / loading
-- Reactive meshes, cameras and lights
-- Asynchronous asset and mesh loading
-- Custom factory functions to load (asynchronously) custom geometries, materials and textures
-- Input manager
-- Behaviour components for data manipulation
+Only core features will be present in this package: You will be able to extend this libraries classes and components to easily add your own required features.
+
+However, for now, there are still some shipped in features. Some features are bound to change as the library evolves.
+
+- Asset manager to automatically load and unload your assets.
+- Custom asset factory functions to load (asynchronously) custom geometries, materials and textures.
+
+- Scene manager able to handle multiple scenes. Only once scene at a time may be active however
+- Meshes, cameras and lights and groups with reactive property bindings
+- Behaviour components for data manipulation: Can be placed in the object, scene or application scope, depending on the seeked result.
+
+- Other default components such as fog.
+
+- First version of a input manager based on [pinput](https://github.com/ichub/pinput)
 
 **Todo:**
 
-- Add delta time ( for now it is equals to 0 all time )
-- Change project to library and add samples
-- Publish first pre-release on npm
+- Add delta time ( for now it is not set and is always equals to 0 )
+
+- Add scene loading events for tracking loading progress
+- Remove scene active prop (can be done with an v-if attribute)
+- Add scene preload nested assets handling
+- Add cube texture component
+
+- Add default materials and geometries
 
 ## Usage
 
-####Define your scenes
+###Installation
+
+1. Install THREE.js:
+
+`npm install three --save`
+
+2. Optionally, install THREE.js typings:
+
+`npm install @types/three --save-dev`
+
+3. Install this package:
+
+`npm install vue-threejs-composer --save`
+
+###Samples
+
+If you want to test out our samples, you can clone our repository and launch our samples with the following commands:
+
+1. Install dependencies
+
+`npm install`
+
+2. Launch development server
+
+`npm run serve`
+
+3. Play around with the files in */samples*. The demo scene is situated at */samples/views/Demo.vue*
+
+###Define your scenes
 
 ```html
 <div>
@@ -72,7 +111,7 @@ Contains Vuejs bindings for creating and interacting with Threejs scenes and obj
 </div>
 ```
 
-####Define custom behaviours
+###Define custom behaviours
 
 ```ts
 import { Component, Mixins, Prop } from "vue-property-decorator";

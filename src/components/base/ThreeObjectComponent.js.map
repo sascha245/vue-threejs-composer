@@ -1,0 +1,1 @@
+{"version":3,"file":"ThreeObjectComponent.js","sourceRoot":"","sources":["ThreeObjectComponent.ts"],"names":[],"mappings":";AACA,OAAO,EAAE,SAAS,EAAE,MAAM,EAAE,GAAG,EAAE,MAAM,wBAAwB,CAAC;AAGhE,IAAa,oBAAoB,GAAjC,MAAa,oBAAqB,SAAQ,GAAG;CAG5C,CAAA;AADC;IADC,MAAM,CAAC,EAAE,OAAO,EAAE,SAAS,EAAE,CAAC;oDACiB;AAFrC,oBAAoB;IADhC,SAAS;GACG,oBAAoB,CAGhC;SAHY,oBAAoB"}
