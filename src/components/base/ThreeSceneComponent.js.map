@@ -1,1 +1,0 @@
-{"version":3,"file":"ThreeSceneComponent.js","sourceRoot":"","sources":["ThreeSceneComponent.ts"],"names":[],"mappings":";AACA,OAAO,EAAE,SAAS,EAAE,MAAM,EAAE,GAAG,EAAE,MAAM,wBAAwB,CAAC;AAGhE,IAAa,mBAAmB,GAAhC,MAAa,mBAAoB,SAAQ,GAAG;CAG3C,CAAA;AADC;IADC,MAAM,CAAC,EAAE,OAAO,EAAE,SAAS,EAAE,CAAC;kDACD;AAFnB,mBAAmB;IAD/B,SAAS;GACG,mBAAmB,CAG/B;SAHY,mBAAmB"}
