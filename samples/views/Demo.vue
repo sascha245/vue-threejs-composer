@@ -26,20 +26,23 @@
 
           <fog exp2/>
 
-          <camera name="mainCamera" :factory="cameraFactory">
+          <camera :factory="cameraFactory">
             <position :value="scene1.camera.position"/>
             <rotation :value="scene1.camera.rotation" rad/>
 
             <my-behaviour :data="scene1.camera"/>
           </camera>
 
-          <light name="light" :factory="lightFactory">
+          <light name="sun" :factory="lightFactory">
             <position :value="{x: 0, y: 10, z: 0}"/>
             <shadows cast/>
           </light>
 
-          <group name="group">
-            <position :value="{ x: 0, y: 0, z: 0 }"/>
+          <grid/>
+          <axes/>
+
+          <group>
+            <position :value="{ x: 0, y: -1, z: 0 }"/>
 
             <mesh name="waterPlane" geometry="plane" material="waterMat">
               <rotation :value="{ x: -90, y: 0, z: 0 }"/>
@@ -48,7 +51,6 @@
 
             <mesh v-for="field in scene1.fields"
               :key="field.id"
-              :name="'field-'+field.id"
               geometry="cube"
               material="cubeMat"
               >
