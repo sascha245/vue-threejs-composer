@@ -12,13 +12,16 @@
     <div v-if="canvas">
       <three :canvas="canvas" antialias>
 
-        <scene :name="scene1.name" :active.sync="scene1.active">
+        <scene :name="scene1.name" :active.sync="scene1.active" @load="startLoading" @load-progress="loadingProgress" @loaded="finishLoading">
           <template slot="preload">
-            <material name="cubeMat" :factory="cubeMaterialFactory"/>
-            <geometry name="cube" :factory="cubeFactory"/>
+            <div>
+              <material name="cubeMat" :factory="cubeMaterialFactory"/>
+              <material name="waterMat" :factory="waterMaterialFactory"/>
+            </div>
 
-            <material name="waterMat" :factory="waterMaterialFactory"/>
+            <geometry name="cube" :factory="cubeFactory"/>
             <geometry name="plane" :factory="planeFactory"/>
+
           </template>
 
           <fog exp2/>

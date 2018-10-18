@@ -4,7 +4,6 @@ import { Component, Vue } from "vue-property-decorator";
 import {
     CameraFactory, components, GeometryFactory, LightFactory, MaterialFactory
 } from "../../src";
-
 import { MyBehaviour } from "./MyBehaviour";
 
 @Component({
@@ -65,6 +64,16 @@ export default class About extends Vue {
 
   public scenes = [this.scene1, this.scene2];
 
+  public startLoading() {
+    console.log("start loading");
+  }
+  public finishLoading() {
+    console.log("finish loading");
+  }
+  public loadingProgress(amount: number, total: number) {
+    console.log("loading progress", `${amount} / ${total}`);
+  }
+
   public changeScene(pScene: any) {
     this.scenes.forEach(scene => {
       scene.active = false;
@@ -77,7 +86,7 @@ export default class About extends Vue {
     console.log(this.scene1);
 
     this.cubeFactory = async () => {
-      // await new Promise(r => setTimeout(r, 3000));
+      await new Promise(r => setTimeout(r, 2000));
       return new THREE.BoxBufferGeometry(1, 2, 1);
     };
     this.planeFactory = async () => {

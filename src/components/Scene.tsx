@@ -1,8 +1,9 @@
 import * as THREE from "three";
+import { VNode } from "vue";
 import { Component, Mixins, Prop, Provide, Vue, Watch } from "vue-property-decorator";
 
 import { AssetType } from "../types";
-import { ThreeAssetComponent, ThreeComponent } from "./base";
+import { isThreeAssetComponent, ThreeAssetComponent, ThreeComponent } from "./base";
 
 @Component
 export class Scene extends Mixins(ThreeComponent) {
@@ -70,19 +71,37 @@ export class Scene extends Mixins(ThreeComponent) {
     this.m_isReady = true;
   }
 
-  public async preloadAssets() {
-    const assets: Array<Promise<AssetType>> = [];
-    const preloadNodes = this.$slots.preload;
-    if (preloadNodes) {
-      for (const node of preloadNodes) {
+  private recursivePreload(
+    data: { counter: number; assets: Array<Promise<AssetType>> },
+    nodes: VNode[] | undefined
+  ) {
+    if (nodes) {
+      for (const node of nodes) {
         const component = node.componentInstance;
-        if (component instanceof ThreeAssetComponent) {
-          assets.push(component.asset);
+        if (component && isThreeAssetComponent(component)) {
+          const p = component.asset.then(asset => {
+            ++data.counter;
+            this.$emit("load-progress", data.counter, data.assets.length);
+            return asset;
+          });
+          data.assets.push(p);
         }
+        this.recursivePreload(data, node.children);
       }
     }
+  }
 
-    return Promise.all(assets);
+  public async preloadAssets() {
+    this.$emit("load");
+
+    const data: { counter: number; assets: Array<Promise<AssetType>> } = {
+      assets: [],
+      counter: 0
+    };
+    this.recursivePreload(data, this.$slots.preload);
+
+    await Promise.all(data.assets);
+    this.$emit("loaded");
   }
 
   public mounted() {
@@ -109,7 +128,7 @@ export class Scene extends Mixins(ThreeComponent) {
     );
 
     return (
-      <div className="scene">
+      <div class="scene">
         <h2>Scene {this.name}</h2>
         <div>
           <h3>Preload</h3>

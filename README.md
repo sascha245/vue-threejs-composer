@@ -23,13 +23,9 @@ However, for now, there are still some shipped in features. Some features are bo
 
 **Todo:**
 
-- Add delta time ( for now it is not set and is always equals to 0 )
-
-- Add scene loading events for tracking loading progress
 - Remove scene active prop (can be done with an v-if attribute)
-- Add scene preload nested assets handling
-- Add cube texture component
 
+- Add cube texture component
 - Add default materials and geometries
 
 ## Usage
@@ -123,7 +119,6 @@ export class MyBehaviour extends Mixins(Behaviour) {
   @Prop()
   public data!: {
     position: Vec3;
-    rotation: Vec3;
   };
 
   private m_moveUp = true;
@@ -144,7 +139,8 @@ export class MyBehaviour extends Mixins(Behaviour) {
 
   // lifecycle function called before each frame (optional)
   public update(deltaTime: number) {
-    this.data.position.y += 0.01 * (this.m_moveUp ? 1 : -1);
+    const speed = 5; // 5 y / second
+    this.data.position.y += deltaTime * (this.m_moveUp ? 1 : -1) * speed;
 
     if (this.data.position.y > 10) {
       this.m_moveUp = false;
