@@ -1,36 +1,37 @@
-# Vue Three.js
+# vue-threejs-composer
 
 /!\ This module is still in development.
 
-Contains Vuejs bindings for creating and interacting with Threejs scenes and objects in a easy and reactive way.
+Build beautiful and interactive scenes in the easy way.
 
-**Features:**
+## Features
 
-Only core features will be present in this package: You will be able to extend this libraries classes and components to easily add your own required features.
+This library's strong points:
 
-However, for now, there are still some shipped in features. Some features are bound to change as the library evolves.
+1. Core features to easily register assets and create objects in your scenes.
 
-- Asset manager to automatically load and unload your assets.
-- Custom asset factory functions to load (asynchronously) custom geometries, materials and textures.
+2. Asset manager to store your assets.
 
-- Scene manager able to handle multiple scenes. Only once scene at a time may be active however
-- Meshes, cameras and lights and groups with reactive property bindings
-- Behaviour components for data manipulation: Can be placed in the object, scene or application scope, depending on the seeked result.
+3. If necessary, easily create even the most unique geometries, materials and textures with dedicated factory functions.
 
-- Other default components such as fog.
+4. Behaviours you can attach to objects, scenes or your application to move the world.
 
-- First version of a input manager based on [pinput](https://github.com/ichub/pinput)
+5. Inbuild input manager to handle inputs in a more forward way.
+
+6. Scenes with asset preloading
+
+7. Easily add your own content! It is very easy to create your own components and wrappers on top of this library.
 
 **Todo:**
 
-- Remove scene active prop (can be done with an v-if attribute)
-
 - Add cube texture component
-- Add default materials and geometries
+- Add basic materials and geometries
+- Add basic meshes and lights
+- Add obj/fbx file loading and saving in asset manager
 
 ## Usage
 
-###Installation
+### Installation
 
 1. Install THREE.js:
 
@@ -44,7 +45,7 @@ However, for now, there are still some shipped in features. Some features are bo
 
 `npm install vue-threejs-composer --save`
 
-###Samples
+### Samples
 
 If you want to test out our samples, you can clone our repository and launch our samples with the following commands:
 
@@ -58,31 +59,41 @@ If you want to test out our samples, you can clone our repository and launch our
 
 3. Play around with the files in */samples*. The demo scene is situated at */samples/views/Demo.vue*
 
-###Define your scenes
+### Define your scenes
 
 ```html
 <div>
-    <canvas ref="canvas" class="webglCanvas"></canvas>
-    <div v-if="canvas">
+  <canvas ref="canvas" class="webglCanvas"></canvas>
+  <div v-if="canvas">
     <three :canvas="canvas" antialias>
 
-      <scene name="MyScene" active>
+      <scene name="MyScene" active @load="loadingStarted" @load-progress="loadingProgress" @loaded="loadingFinished">
         <template slot="preload">
-          <material name="cubeMat" :factory="cubeMaterialFactory"/>
-          <geometry name="cube" :factory="cubeFactory"/>
+          
+          <div>
+            <material name="cubeMat" :factory="cubeMaterialFactory"/>
+            <geometry name="cube" :factory="cubeFactory"/>
+          </div>
 
           <material name="waterMat" :factory="waterMaterialFactory"/>
           <geometry name="plane" :factory="planeFactory"/>
         </template>
 
+        <fog exp2/>
+        <grid :size="10" :divisions="10"/>
+        <axes :size="1"/>
+
         <camera name="mainCamera" :factory="cameraFactory">
-          <position :value="scene1.camera.position"/>
-          <rotation :value="scene1.camera.rotation" rad/>
+          <position :value="camera.position"/>
+          <rotation :value="camera.rotation" rad/>
         </camera>
 
         <light name="light" :factory="lightFactory">
-          <position :value="{x: 0, y: 10, z: 0}"/>
+          <position :value="light.position"/>
           <shadows cast/>
+
+          <!-- See custom behaviour implementation below -->
+          <hover-behaviour :position="light.position" :distance="1" :speed="5">
         </light>
 
         <mesh name="waterPlane" geometry="plane" material="waterMat">
@@ -104,10 +115,11 @@ If you want to test out our samples, you can clone our repository and launch our
       </scene>
 
     </three>
+  </div>
 </div>
 ```
 
-###Define custom behaviours
+### Define custom behaviours
 
 ```ts
 import { Component, Mixins, Prop } from "vue-property-decorator";
@@ -115,13 +127,18 @@ import { Component, Mixins, Prop } from "vue-property-decorator";
 import { Behaviour } from "vue-threejs-composer";
 
 @Component
-export class MyBehaviour extends Mixins(Behaviour) {
-  @Prop()
-  public data!: {
-    position: Vec3;
-  };
+export class HoverBehaviour extends Mixins(Behaviour) {
+  @Prop({ required: true, type: Object })
+  public position!: { x: number, y: number, z: number };
+  
+  @Prop({ type: Number, default: 1 })
+  public distance!: number;
+  
+  @Prop({ type: Number, default: 1 })
+  public speed!: number;
 
   private m_moveUp = true;
+  private m_originalY = 0;
 
   public created() {
     // access app
@@ -133,18 +150,19 @@ export class MyBehaviour extends Mixins(Behaviour) {
     // access object if behaviour is placed in an object
     const object = this.object();
 
+    this.m_originalY = this.position.y;
+
     // once your component is ready
     this.ready();
   }
 
   // lifecycle function called before each frame (optional)
   public update(deltaTime: number) {
-    const speed = 5; // 5 y / second
-    this.data.position.y += deltaTime * (this.m_moveUp ? 1 : -1) * speed;
+    this.position.y += deltaTime * (this.m_moveUp ? 1 : -1) * this.speed;
 
-    if (this.data.position.y > 10) {
+    if (this.position.y > (this.m_originalY + this.distance)) {
       this.m_moveUp = false;
-    } else if (this.data.position.y < 0) {
+    } else if (this.position.y < (this.m_originalY - this.distance)) {
       this.m_moveUp = true;
     }
   }
@@ -158,3 +176,11 @@ export class MyBehaviour extends Mixins(Behaviour) {
   }
 }
 ```
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) for details
+
+## Acknowledgments
+
+- First version of a input manager based on [pinput](https://github.com/ichub/pinput)
