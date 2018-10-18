@@ -78,7 +78,6 @@ export class Fog extends Mixins(ThreeComponent, ThreeSceneComponent) {
   }
 
   public beforeDestroy() {
-    console.log("fog beforeDestroy");
     const scene = this.scene();
     scene.fog = null;
   }
@@ -87,10 +86,6 @@ export class Fog extends Mixins(ThreeComponent, ThreeSceneComponent) {
     if (!this.m_created) {
       return null;
     }
-    return (
-      <div className="fog">
-        <span>Fog</span>
-      </div>
-    );
+    return <div />;
   }
 }

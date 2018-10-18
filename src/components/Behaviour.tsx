@@ -15,7 +15,6 @@ export class Behaviour extends Mixins(
   }
 
   public beforeDestroy() {
-    console.log("before destroy behaviour");
     if ((this as any).update) {
       this.app().off("update", (this as any).update);
     }

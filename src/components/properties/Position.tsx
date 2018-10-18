@@ -5,13 +5,8 @@ import { ThreeObjectComponent } from "../base";
 @Component
 export class Position extends Mixins(ThreeObjectComponent) {
   @Prop({
-    default() {
-      return {
-        x: 0,
-        y: 0,
-        z: 0
-      };
-    }
+    required: true,
+    type: Object
   })
   private value!: { x: number; y: number; z: number };
 
@@ -30,9 +25,6 @@ export class Position extends Mixins(ThreeObjectComponent) {
   }
 
   public render(h: any) {
-    const valueStringify = `[${this.value.x}, ${this.value.y}, ${
-      this.value.z
-    }]`;
-    return <li>Position {valueStringify}</li>;
+    return <div />;
   }
 }

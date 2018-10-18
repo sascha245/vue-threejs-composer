@@ -16,7 +16,6 @@ export class Texture extends Mixins(ThreeComponent, ThreeAssetComponent) {
   public src?: string;
 
   public created() {
-    console.log("created texture", this.name);
     if (this.factory) {
       this.asset = this.factory();
     } else if (this.src) {
@@ -37,11 +36,10 @@ export class Texture extends Mixins(ThreeComponent, ThreeAssetComponent) {
   }
 
   public async beforeDestroy() {
-    console.log("beforeDestroy texture", this.name);
     this.app().assets.remove(this.name, AssetTypes.TEXTURE);
   }
 
   public render(h: any) {
-    return <div className="texture">Texture {this.name}</div>;
+    return <div />;
   }
 }

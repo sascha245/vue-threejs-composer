@@ -6,13 +6,7 @@ import { ThreeObjectComponent } from "../base";
 @Component
 export class Rotation extends Mixins(ThreeObjectComponent) {
   @Prop({
-    default() {
-      return {
-        x: 0,
-        y: 0,
-        z: 0
-      };
-    },
+    required: true,
     type: Object
   })
   private value!: { x: number; y: number; z: number };
@@ -47,19 +41,6 @@ export class Rotation extends Mixins(ThreeObjectComponent) {
   }
 
   public render(h: any) {
-    const vec = this.value;
-    // if (this.rad) {
-    //   const deg = THREE.Math.radToDeg;
-    //   vec = {
-    //     x: deg(this.value.x),
-    //     y: deg(this.value.y),
-    //     z: deg(this.value.z)
-    //   };
-    // }
-
-    const type = this.rad ? "rad" : "deg";
-
-    const valueStringify = `${type}[${vec.x}, ${vec.y}, ${vec.z}]`;
-    return <li>Rotation {valueStringify}</li>;
+    return <div />;
   }
 }

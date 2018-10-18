@@ -12,17 +12,15 @@ export class Geometry extends Mixins(ThreeComponent, ThreeAssetComponent) {
   public factory!: GeometryFactory;
 
   public async created() {
-    console.log("created geometry", this.name);
     this.asset = this.factory();
     this.app().assets.add(this.name, AssetTypes.GEOMETRY, this.asset);
   }
 
   public async beforeDestroy() {
-    console.log("beforeDestroy geometry", this.name);
     this.app().assets.remove(this.name, AssetTypes.GEOMETRY);
   }
 
   public render(h: any) {
-    return <div className="geometry">Geometry {this.name}</div>;
+    return <div />;
   }
 }

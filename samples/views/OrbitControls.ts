@@ -1,3 +1,4 @@
+// tslint:disable
 import * as THREE from "three";
 
 const STATE = {

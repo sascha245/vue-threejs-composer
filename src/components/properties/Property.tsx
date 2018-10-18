@@ -31,10 +31,6 @@ export class Property extends Mixins(ThreeObjectComponent) {
   }
 
   public render(h: any) {
-    return (
-      <div className="property">
-        Property {this.name} = {this.value}
-      </div>
-    );
+    return <div />;
   }
 }

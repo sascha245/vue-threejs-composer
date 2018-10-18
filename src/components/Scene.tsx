@@ -7,7 +7,7 @@ import { isThreeAssetComponent, ThreeAssetComponent, ThreeComponent } from "./ba
 
 @Component
 export class Scene extends Mixins(ThreeComponent) {
-  @Prop({ required: true, type: String })
+  @Prop({ type: String, default: "" })
   public name!: string;
 
   @Prop({ default: false, type: Boolean })
@@ -45,8 +45,6 @@ export class Scene extends Mixins(ThreeComponent) {
   }
 
   public async onDeactivate() {
-    console.log("deactivate scene", this.name);
-
     const manager = this.app().sceneManager;
     if (this.m_scene === manager.active) {
       manager.active = undefined;
@@ -59,10 +57,9 @@ export class Scene extends Mixins(ThreeComponent) {
   }
 
   public async onActivate() {
-    console.log("activate scene", this.name);
-
     const manager = this.app().sceneManager;
     this.m_scene = new THREE.Scene();
+    this.m_scene.name = this.name;
     manager.active = this.m_scene;
 
     await Vue.nextTick();
@@ -105,36 +102,22 @@ export class Scene extends Mixins(ThreeComponent) {
   }
 
   public mounted() {
-    console.log("scene mounted");
     this.onChangeActive();
   }
 
   public beforeDestroy() {
-    console.log("scene beforeDestroy");
     this.onDeactivate();
   }
 
   public render(h: any) {
-    console.log("scene render");
     if (!this.m_isActive) {
       return null;
     }
 
-    const whenReady = (
-      <div>
-        <h3>Scene ready</h3>
-        {this.$slots.default}
-      </div>
-    );
-
     return (
-      <div class="scene">
-        <h2>Scene {this.name}</h2>
-        <div>
-          <h3>Preload</h3>
-          {this.$slots.preload}
-        </div>
-        {this.m_isReady ? whenReady : null}
+      <div>
+        <div>{this.$slots.preload}</div>
+        <div>{this.m_isReady ? this.$slots.default : null}</div>
       </div>
     );
   }

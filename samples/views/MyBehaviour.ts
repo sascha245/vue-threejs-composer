@@ -22,7 +22,6 @@ export class MyBehaviour extends Mixins(Behaviour) {
   private camera!: THREE.PerspectiveCamera;
 
   public created() {
-    console.log("created my behaviour", this);
     if (!this.data) {
       throw new Error("Could not initialize MyBehaviour: data is missing");
     }
@@ -49,7 +48,6 @@ export class MyBehaviour extends Mixins(Behaviour) {
   }
 
   public beforeDestroy() {
-    console.log("before destroy mybehaviour");
     this.controls.dispose();
   }
 

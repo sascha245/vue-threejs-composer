@@ -12,17 +12,15 @@ export class Material extends Mixins(ThreeComponent, ThreeAssetComponent) {
   private factory!: MaterialFactory;
 
   public created() {
-    console.log("created material", this.name);
     this.asset = this.factory();
     this.app().assets.add(this.name, AssetTypes.MATERIAL, this.asset);
   }
 
   public async beforeDestroy() {
-    console.log("beforeDestroy material", this.name);
     this.app().assets.remove(this.name, AssetTypes.MATERIAL);
   }
 
   public render(h: any) {
-    return <div className="material">Material {this.name}</div>;
+    return <div />;
   }
 }

@@ -6,7 +6,7 @@ import { ThreeComponent, ThreeSceneComponent } from "./base";
 
 @Component
 export class Camera extends Mixins(ThreeComponent, ThreeSceneComponent) {
-  @Prop({ required: true })
+  @Prop({ type: String, default: "" })
   private name!: string;
 
   @Prop({ default: true, type: Boolean })
@@ -47,8 +47,6 @@ export class Camera extends Mixins(ThreeComponent, ThreeSceneComponent) {
   }
 
   public onDeactivate() {
-    console.log("deactivate camera", this.name);
-
     const manager = this.app().cameraManager;
     if (this.m_camera === manager.main) {
       manager.main = undefined;
@@ -56,15 +54,13 @@ export class Camera extends Mixins(ThreeComponent, ThreeSceneComponent) {
   }
 
   public async onActivate() {
-    console.log("activate camera", this.name);
-
     const manager = this.app().cameraManager;
     manager.main = this.m_camera;
   }
 
   public async created() {
-    console.log("camera created");
     this.m_camera = await this.factory(this.app().renderer.getSize());
+    this.m_camera.name = this.name;
     this.onChangeMain();
 
     this.m_created = true;
@@ -78,11 +74,6 @@ export class Camera extends Mixins(ThreeComponent, ThreeSceneComponent) {
     if (!this.main || !this.m_created) {
       return null;
     }
-    return (
-      <div className="camera">
-        <span>Camera</span>
-        <ul>{this.$slots.default}</ul>
-      </div>
-    );
+    return <div>{this.$slots.default}</div>;
   }
 }

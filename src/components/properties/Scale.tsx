@@ -5,13 +5,8 @@ import { ThreeObjectComponent } from "../base";
 @Component
 export class Scale extends Mixins(ThreeObjectComponent) {
   @Prop({
-    default() {
-      return {
-        x: 1,
-        y: 1,
-        z: 1
-      };
-    }
+    required: true,
+    type: Object
   })
   private value!: { x: number; y: number; z: number };
 
@@ -30,9 +25,6 @@ export class Scale extends Mixins(ThreeObjectComponent) {
   }
 
   public render(h: any) {
-    const valueStringify = `[${this.value.x}, ${this.value.y}, ${
-      this.value.z
-    }]`;
-    return <li>Scale {valueStringify}</li>;
+    return <div />;
   }
 }

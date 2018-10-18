@@ -10,7 +10,7 @@ export class Light extends Mixins(
   ThreeSceneComponent,
   ThreeObjectComponent
 ) {
-  @Prop({ required: true })
+  @Prop({ type: String, default: "" })
   private name!: string;
 
   @Prop({ required: true, type: Function })
@@ -34,6 +34,7 @@ export class Light extends Mixins(
     }
 
     this.m_light = await this.factory();
+    this.m_light.name = this.name;
     const parent = this.object ? this.object() : this.scene();
     parent.add(this.m_light);
 
@@ -41,7 +42,6 @@ export class Light extends Mixins(
   }
 
   public beforeDestroy() {
-    console.log("light beforeDestroy");
     const parent = this.object ? this.object() : this.scene();
     parent.remove(this.m_light);
   }
@@ -50,11 +50,6 @@ export class Light extends Mixins(
     if (!this.m_created) {
       return null;
     }
-    return (
-      <div className="light">
-        <span>Light {this.name}</span>
-        <ul>{this.$slots.default}</ul>
-      </div>
-    );
+    return <div>{this.$slots.default}</div>;
   }
 }

@@ -31,15 +31,11 @@ export class Shadows extends Mixins(ThreeObjectComponent) {
         "Shadows property can only be added as child to an object component"
       );
     }
-    console.log("shadow created");
     this.onChangeReceive();
     this.onChangeCast();
   }
 
   public render(h: any) {
-    const props: string[] = [];
-    if (this.receive) props.push("receive");
-    if (this.cast) props.push("cast");
-    return <li>Shadow {props.join(",")}</li>;
+    return <div />;
   }
 }

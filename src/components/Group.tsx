@@ -9,7 +9,7 @@ export class Group extends Mixins(
   ThreeSceneComponent,
   ThreeObjectComponent
 ) {
-  @Prop({ required: true })
+  @Prop({ type: String, default: "" })
   private name!: string;
 
   @Provide("object")
@@ -30,6 +30,7 @@ export class Group extends Mixins(
     }
 
     this.m_group = new THREE.Group();
+    this.m_group.name = this.name;
     const parent = this.object ? this.object() : this.scene();
     parent.add(this.m_group);
 
@@ -37,7 +38,6 @@ export class Group extends Mixins(
   }
 
   public beforeDestroy() {
-    console.log("group beforeDestroy");
     const parent = this.object ? this.object() : this.scene();
     parent.remove(this.m_group);
   }
@@ -46,11 +46,6 @@ export class Group extends Mixins(
     if (!this.m_created) {
       return null;
     }
-    return (
-      <div className="group">
-        <span>Group {this.name}</span>
-        <ul>{this.$slots.default}</ul>
-      </div>
-    );
+    return <div>{this.$slots.default}</div>;
   }
 }

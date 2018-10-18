@@ -10,7 +10,7 @@ export class Mesh extends Mixins(
   ThreeSceneComponent,
   ThreeObjectComponent
 ) {
-  @Prop({ required: true, type: String })
+  @Prop({ type: String, default: "" })
   private name!: string;
 
   @Prop({ required: true, type: String })
@@ -68,6 +68,7 @@ export class Mesh extends Mixins(
       geometry as GeometryType,
       material as MaterialType
     );
+    this.m_mesh.name = this.name;
 
     const parent = this.object ? this.object() : this.scene();
     parent.add(this.m_mesh);
@@ -76,7 +77,6 @@ export class Mesh extends Mixins(
   }
 
   public beforeDestroy() {
-    console.log("mesh beforeDestroy");
     const parent = this.object ? this.object() : this.scene();
     parent.remove(this.m_mesh);
   }
@@ -85,11 +85,6 @@ export class Mesh extends Mixins(
     if (!this.m_created) {
       return null;
     }
-    return (
-      <div className="mesh">
-        <span>Mesh {this.name}</span>
-        <ul>{this.$slots.default}</ul>
-      </div>
-    );
+    return <div>{this.$slots.default}</div>;
   }
 }

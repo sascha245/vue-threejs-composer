@@ -36,11 +36,9 @@ export class Three extends Vue {
     window.addEventListener("resize", this.onResize);
     this.onChangeActive();
     this.isReady = true;
-    console.log("three mounted");
   }
 
   public beforeDestroy() {
-    console.log("three beforeDestroy");
     this.onDeactivate();
     window.removeEventListener("resize", this.onResize);
     if (this._app) {
@@ -50,7 +48,6 @@ export class Three extends Vue {
 
   @Watch("active")
   public onChangeActive() {
-    console.log("three active: ", this);
     if (this.active) {
       this.onActivate();
     } else {
@@ -59,14 +56,12 @@ export class Three extends Vue {
   }
 
   public onDeactivate() {
-    console.log("deactivate render loop");
     if (this._animationFrame) {
       cancelAnimationFrame(this._animationFrame);
       this._animationFrame = undefined;
     }
   }
   public onActivate() {
-    console.log("activate render loop");
     if (!this._animationFrame) {
       this._lastUpdate = Date.now();
       this.onRender();
@@ -95,8 +90,7 @@ export class Three extends Vue {
 
   public render(h: any) {
     return (
-      <div className="three">
-        <h1>Three</h1>
+      <div style="display: none;">
         {this.isReady ? this.$slots.default : null}
       </div>
     );
