@@ -64,12 +64,12 @@ export class Application {
   public update(deltaTime: number) {
     const scene = this.sceneManager.active;
     const camera = this.cameraManager.main;
+
+    this.inputs.update();
+    this._hooks.emit("update", deltaTime);
+
     if (this.renderer) {
       this.renderer.clearColor();
-      this.inputs.update();
-
-      this._hooks.emit("update", deltaTime);
-
       if (scene && camera) {
         this.renderer.render(scene, camera);
       }

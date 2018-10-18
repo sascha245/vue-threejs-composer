@@ -20,6 +20,7 @@ export class Three extends Vue {
 
   private _app!: Application;
   private _animationFrame?: number;
+  private _lastUpdate?: number;
 
   public app() {
     return this._app;
@@ -67,13 +68,17 @@ export class Three extends Vue {
   public onActivate() {
     console.log("activate render loop");
     if (!this._animationFrame) {
+      this._lastUpdate = Date.now();
       this.onRender();
     }
   }
 
   public onRender() {
+    const now = Date.now();
+    const deltaTime = (now - this._lastUpdate!) * 0.001;
     this._animationFrame = requestAnimationFrame(this.onRender);
-    this._app.update(0);
+    this._app.update(deltaTime);
+    this._lastUpdate = now;
   }
 
   private onResize() {
