@@ -1,10 +1,15 @@
+import "../FbxLoader";
+
 import * as THREE from "three";
 import { Component, Vue } from "vue-property-decorator";
 
 import {
-    CameraFactory, components, GeometryFactory, LightFactory, MaterialFactory
+    Application, AssetTypes, CameraFactory, components, GeometryFactory, LightFactory,
+    MaterialFactory
 } from "../../src";
 import { MyBehaviour } from "./MyBehaviour";
+
+(window as any).THREE = THREE;
 
 @Component({
   components: {
@@ -17,6 +22,21 @@ export default class About extends Vue {
   public planeFactory: GeometryFactory | null = null;
   public cubeMaterialFactory: MaterialFactory | null = null;
   public waterMaterialFactory: MaterialFactory | null = null;
+
+  public polygonMaterialFactory: MaterialFactory = async (app: Application) => {
+    const texture = await app.assets.get("PolygonMini_Tex", AssetTypes.TEXTURE);
+
+    if (!texture) {
+      throw new Error("Could not find 'PolygonMini_Tex' texture");
+    }
+
+    const mat = new THREE.MeshStandardMaterial({
+      color: "#eeeeee",
+      metalness: 0.01
+    });
+    mat.map = texture as THREE.Texture;
+    return mat;
+  };
 
   public lightFactory: LightFactory | null = null;
   public cameraFactory: CameraFactory | null = null;
@@ -62,15 +82,23 @@ export default class About extends Vue {
     active: true
   };
 
+  public isLoading = true;
+  public loadingAmount = 0;
+  public loadingTotal = 0;
+
   public scenes = [this.scene1, this.scene2];
 
   public startLoading() {
+    this.isLoading = true;
     console.log("start loading");
   }
   public finishLoading() {
+    this.isLoading = false;
     console.log("finish loading");
   }
   public loadingProgress(amount: number, total: number) {
+    this.loadingAmount = amount;
+    this.loadingTotal = total;
     console.log("loading progress", `${amount} / ${total}`);
   }
 
@@ -86,19 +114,26 @@ export default class About extends Vue {
     console.log(this.scene1);
 
     this.cubeFactory = async () => {
-      await new Promise(r => setTimeout(r, 2000));
-      return new THREE.BoxBufferGeometry(1, 2, 1);
+      // await new Promise(r => setTimeout(r, 2000));
+      return new THREE.BoxBufferGeometry(1, 1, 1);
     };
     this.planeFactory = async () => {
       // await new Promise(r => setTimeout(r, 3000));
       return new THREE.PlaneBufferGeometry(100, 100);
     };
 
-    this.cubeMaterialFactory = async () => {
+    this.cubeMaterialFactory = async (app: Application) => {
+      const texture = await app.assets.get("crateTex", AssetTypes.TEXTURE);
+
+      if (!texture) {
+        throw new Error("Could not find 'crateTex' texture");
+      }
+
       const mat = new THREE.MeshPhysicalMaterial({
         color: "#eeeeee",
         metalness: 0.01
       });
+      mat.map = texture as THREE.Texture;
       // mat.color = new THREE.Color("#dddddd");
       return mat;
     };

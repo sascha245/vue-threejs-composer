@@ -12,7 +12,7 @@ export class Material extends Mixins(ThreeComponent, ThreeAssetComponent) {
   private factory!: MaterialFactory;
 
   public created() {
-    this.asset = this.factory();
+    this.asset = this.factory(this.app());
     this.app().assets.add(this.name, AssetTypes.MATERIAL, this.asset);
   }
 

@@ -10,5 +10,6 @@ export * from "./Fog";
 export * from "./Group";
 export * from "./Grid";
 export * from "./Axes";
+export * from "./Model";
 
 export * from "./properties";

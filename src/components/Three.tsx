@@ -89,10 +89,6 @@ export class Three extends Vue {
   }
 
   public render(h: any) {
-    return (
-      <div style="display: none;">
-        {this.isReady ? this.$slots.default : null}
-      </div>
-    );
+    return <div>{this.isReady ? this.$slots.default : null}</div>;
   }
 }

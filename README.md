@@ -11,19 +11,17 @@ Only core features will be present in this package: You will be able to extend t
 However, for now, there are still some shipped in features. Some features are bound to change as the library evolves.
 
 - Asset manager to automatically load and unload your assets.
-- Custom asset factory functions to load (asynchronously) custom geometries, materials and textures.
+- Custom asset factory functions to load custom geometries, materials, textures and models
 
 - Scene manager able to handle multiple scenes. Only once scene at a time may be active however
 - Meshes, cameras and lights and groups with reactive property bindings
 - Behaviour components for data manipulation: Can be placed in the object, scene or application scope, depending on the seeked result.
 
-- Other default components such as fog.
+- Other default components such as fog, grid and axes.
 
 - First version of a input manager based on [pinput](https://github.com/ichub/pinput)
 
 **Todo:**
-
-- Remove scene active prop (can be done with an v-if attribute)
 
 - Add cube texture component
 - Add default materials and geometries

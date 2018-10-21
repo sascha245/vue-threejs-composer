@@ -1,0 +1,14 @@
+{
+  "asset": "/assets/textures/crate.jpg",
+  "mapping": 300,
+  "repeat": [1, 1],
+  "offset": [0, 0],
+  "center": [0, 0],
+  "rotation": 0,
+  "wrap": [1001, 1001],
+  "format": 1022,
+  "minFilter": 1008,
+  "magFilter": 1006,
+  "anisotropy": 1,
+  "flipY": true
+}

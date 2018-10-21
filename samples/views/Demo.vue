@@ -8,19 +8,36 @@
       <button @click="changeScene(scene2)">Scene 2</button>
     </div>
 
-    <canvas ref="canvas" class="webglCanvas"></canvas>
+    <div class="screen">
+      <canvas ref="canvas" class="screen-canvas"></canvas>
+      <div class="screen-loading" v-if="isLoading">
+        <div>
+          <p>Loading...</p>
+          <p>{{loadingAmount}} / {{loadingTotal}}</p>
+        </div>
+      </div>
+    </div>
     <div v-if="canvas">
       <three :canvas="canvas" antialias>
 
         <scene :name="scene1.name" :active.sync="scene1.active" @load="startLoading" @load-progress="loadingProgress" @loaded="finishLoading">
           <template slot="preload">
             <div>
+              <texture name="crateTex" src="/assets/textures/crate.jpg"/>
               <material name="cubeMat" :factory="cubeMaterialFactory"/>
-              <material name="waterMat" :factory="waterMaterialFactory"/>
+
+              <texture name="PolygonMini_Tex" src="/assets/textures/PolygonMinis_Texture_01.png"/>
+              <material name="PolygonMini_Mat" :factory="polygonMaterialFactory"/>
+
+              <geometry name="cube" :factory="cubeFactory"/>
+
+              <model name="grassModel" src="/assets/models/SM_Env_Grass_01.fbx" materials="PolygonMini_Mat"/>
+              <model name="PM_column" src="/assets/models/SM_Tile_Hex_Column_02.fbx" materials="PolygonMini_Mat"/>
+              <model name="PM_flat" src="/assets/models/SM_Tile_Hex_Flat_01.fbx" materials="PolygonMini_Mat"/>
             </div>
 
-            <geometry name="cube" :factory="cubeFactory"/>
             <geometry name="plane" :factory="planeFactory"/>
+            <material name="waterMat" :factory="waterMaterialFactory"/>
 
           </template>
 
@@ -38,31 +55,55 @@
             <shadows cast/>
           </light>
 
-          <grid/>
-          <axes/>
+          <grid>
+            <position :value="{ x: -10, y: 0.5, z: -10 }"/>
+          </grid>
+          <axes>
+            <position :value="{ x: -10, y: 0.5, z: -10 }"/>
+          </axes>
 
           <group>
-            <position :value="{ x: 0, y: -1, z: 0 }"/>
+            <position :value="{ x: 0, y: 0, z: 0 }"/>
 
             <mesh name="waterPlane" geometry="plane" material="waterMat">
               <rotation :value="{ x: -90, y: 0, z: 0 }"/>
               <shadows receive/>
             </mesh>
 
+
+            <mesh model="grassModel" name="grass">
+              <position :value="{ x: 10, y: 3, z: 10 }"/>
+              <scale :value="{ x: 0.05, y: 0.05, z: 0.05 }"/>
+              <shadows cast receive recursive/>
+            </mesh>
+
+            <group>
+              <position :value="{ x: 10, y: 3, z: 10 }"/>
+              <scale :value="{ x: 0.01, y: 0.01, z: 0.01 }"/>
+              <shadows cast receive recursive/>
+
+              <mesh model="PM_column" name="column">
+                <shadows cast receive recursive/>
+              </mesh>
+              <mesh model="PM_flat" name="flat_grass">
+                <shadows cast receive recursive/>
+              </mesh>
+            </group>
+
             <mesh v-for="field in scene1.fields"
               :key="field.id"
               geometry="cube"
               material="cubeMat"
               >
-              <position :value="{ x: field.x * 2, y: 0, z: field.y * 2}"/>
-              <scale :value="{ x: 1.2, y: 0.7, z: 1.2}"/>
+              <position :value="{ x: field.x * 2, y: 0.5, z: field.y * 2}"/>
+              <scale :value="{ x: 1.2, y: 1.2, z: 1.2}"/>
               <shadows cast receive/>
             </mesh>
           </group>
 
         </scene>
 
-        <scene :name="scene2.name" :active.sync="scene2.active">
+        <scene :name="scene2.name" :active.sync="scene2.active" @load="startLoading" @load-progress="loadingProgress" @loaded="finishLoading">
           <!-- <template slot="preload">
             <material name="scene2_mat" :factory="materialFactory"/>
             <geometry name="scene2_field" :factory="geometryFactory"/>
@@ -80,9 +121,29 @@
 </template>
 
 <style>
-.webglCanvas {
-  width: 80% !important;
+.screen {
+  position: relative;
+  width: 80%;
+  height: auto;
+  margin: auto;
+  max-height: 100vh;
+}
+.screen-canvas {
+  width: 100% !important;
   height: auto !important;
   max-height: 100vh;
+}
+.screen-loading {
+  position: absolute;
+  top: 0;
+  left: 0;
+  background: black;
+  width: 100%;
+  height: 100%;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: white;
 }
 </style>

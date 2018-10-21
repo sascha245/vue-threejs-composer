@@ -1,7 +1,7 @@
-import * as THREE from "three";
 import { Component, Mixins, Prop } from "vue-property-decorator";
 
-import { AssetTypes, TextureFactory, TextureType } from "../types";
+import { Utils } from "../core";
+import { AssetTypes, TextureFactory } from "../types";
 import { ThreeAssetComponent, ThreeComponent } from "./base";
 
 @Component
@@ -17,14 +17,9 @@ export class Texture extends Mixins(ThreeComponent, ThreeAssetComponent) {
 
   public created() {
     if (this.factory) {
-      this.asset = this.factory();
+      this.asset = this.factory(this.app());
     } else if (this.src) {
-      this.asset = new Promise<TextureType>((resolve, reject) => {
-        const textureLoader = new THREE.TextureLoader();
-        textureLoader.load(this.src!, texture => {
-          resolve(texture);
-        });
-      });
+      this.asset = Utils.loadTexture(this.src, this.name);
     } else {
       throw new Error(
         `Texture "${
@@ -33,6 +28,10 @@ export class Texture extends Mixins(ThreeComponent, ThreeAssetComponent) {
       );
     }
     this.app().assets.add(this.name, AssetTypes.TEXTURE, this.asset);
+
+    this.asset.then(tex => {
+      console.log("texture", this.name, tex);
+    });
   }
 
   public async beforeDestroy() {

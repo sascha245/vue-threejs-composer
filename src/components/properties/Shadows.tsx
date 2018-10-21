@@ -16,13 +16,19 @@ export class Shadows extends Mixins(ThreeObjectComponent) {
   })
   private cast!: boolean;
 
+  @Prop({
+    default: false,
+    type: Boolean
+  })
+  private recursive!: boolean;
+
   @Watch("receive")
   private onChangeReceive() {
-    this.object!().receiveShadow = this.receive;
+    this.changeReceive(this.object!());
   }
   @Watch("cast")
   private onChangeCast() {
-    this.object!().castShadow = this.cast;
+    this.changeCast(this.object!());
   }
 
   public created() {
@@ -37,5 +43,18 @@ export class Shadows extends Mixins(ThreeObjectComponent) {
 
   public render(h: any) {
     return <div />;
+  }
+
+  private changeReceive(obj: THREE.Object3D) {
+    obj.receiveShadow = this.receive;
+    if (this.recursive && obj.children) {
+      obj.children.forEach(this.changeReceive);
+    }
+  }
+  private changeCast(obj: THREE.Object3D) {
+    obj.castShadow = this.cast;
+    if (this.recursive && obj.children) {
+      obj.children.forEach(this.changeCast);
+    }
   }
 }

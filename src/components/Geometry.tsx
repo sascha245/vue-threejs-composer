@@ -12,7 +12,7 @@ export class Geometry extends Mixins(ThreeComponent, ThreeAssetComponent) {
   public factory!: GeometryFactory;
 
   public async created() {
-    this.asset = this.factory();
+    this.asset = this.factory(this.app());
     this.app().assets.add(this.name, AssetTypes.GEOMETRY, this.asset);
   }
 

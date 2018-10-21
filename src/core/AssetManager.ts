@@ -1,9 +1,12 @@
-import { AssetType, AssetTypes, GeometryType, MaterialType, TextureType } from "../types";
+import {
+    AssetType, AssetTypes, DisposableAsset, GeometryType, MaterialType, ModelType, TextureType
+} from "../types";
 
 export class AssetManager {
   private textures: Map<string, Promise<TextureType>> = new Map();
   private materials: Map<string, Promise<MaterialType>> = new Map();
   private geometries: Map<string, Promise<GeometryType>> = new Map();
+  private models: Map<string, Promise<ModelType>> = new Map();
 
   public add(name: string, type: AssetTypes, asset: Promise<AssetType>) {
     switch (type) {
@@ -14,7 +17,10 @@ export class AssetManager {
         this.addToMap(this.materials, name, asset, "Material");
         break;
       case AssetTypes.GEOMETRY:
-        this.addToMap(this.geometries, name, asset, "Geometries");
+        this.addToMap(this.geometries, name, asset, "Geometry");
+        break;
+      case AssetTypes.MODEL:
+        this.addToMap(this.models, name, asset, "Model");
         break;
     }
   }
@@ -27,6 +33,8 @@ export class AssetManager {
         return this.materials.get(name);
       case AssetTypes.GEOMETRY:
         return this.geometries.get(name);
+      case AssetTypes.MODEL:
+        return this.models.get(name);
     }
   }
 
@@ -40,6 +48,9 @@ export class AssetManager {
         break;
       case AssetTypes.GEOMETRY:
         this.removeFromMap(this.geometries, name, "Geometry");
+        break;
+      case AssetTypes.MODEL:
+        this.removeFromMap(this.models, name, "Model");
         break;
     }
   }
@@ -57,7 +68,10 @@ export class AssetManager {
 
   private disposeAsset(asset: Promise<AssetType>) {
     asset.then(value => {
-      value.dispose();
+      const disposable = asset as DisposableAsset;
+      if (disposable.dispose) {
+        disposable.dispose();
+      }
     });
   }
 
