@@ -57,8 +57,6 @@ export class Mesh extends Mixins(
     const parent = this.object ? this.object() : this.scene();
     parent.add(this.m_mesh);
 
-    console.log("mesh ", this.name, this.m_mesh);
-
     this.m_created = true;
   }
 

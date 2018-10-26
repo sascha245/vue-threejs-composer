@@ -1,13 +1,14 @@
 {
   "name": "vue-threejs-composer",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "main": "build/src/index.js",
   "typings": "build/src/index.d.ts",
   "repository": "https://github.com/sascha245/vue-threejs-composer",
   "license": "MIT",
   "keywords": [
     "vue",
-    "threejs"
+    "threejs",
+    "webgl"
   ],
   "scripts": {
     "serve": "vue-cli-service serve ./samples/main.ts",

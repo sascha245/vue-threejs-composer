@@ -6,6 +6,7 @@
   },
   "rules": {
     "interface-name": [true, "never-prefix"],
+    "no-console": [true, "log"],
     "variable-name": false,
     // TODO: allow devDependencies only in **/*.spec.ts files:
     // waiting on https://github.com/palantir/tslint/pull/3708

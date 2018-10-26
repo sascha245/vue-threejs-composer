@@ -35,10 +35,6 @@ export class Model extends Mixins(ThreeComponent, ThreeAssetComponent) {
     this.overrideMaterials();
 
     this.app().assets.add(this.name, AssetTypes.MODEL, this.asset);
-
-    this.asset.then(model => {
-      console.log("model", this.name, model);
-    });
   }
 
   public async beforeDestroy() {
@@ -76,7 +72,6 @@ export class Model extends Mixins(ThreeComponent, ThreeAssetComponent) {
     if (typeof materials === "string") {
       materials = materials.split(",").map(mat => mat.trim());
     }
-    console.log("model materials", materials);
     if (!Array.isArray(materials)) {
       throw new Error(
         `Model "${

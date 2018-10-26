@@ -28,10 +28,6 @@ export class Texture extends Mixins(ThreeComponent, ThreeAssetComponent) {
       );
     }
     this.app().assets.add(this.name, AssetTypes.TEXTURE, this.asset);
-
-    this.asset.then(tex => {
-      console.log("texture", this.name, tex);
-    });
   }
 
   public async beforeDestroy() {
