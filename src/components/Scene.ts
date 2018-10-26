@@ -114,11 +114,9 @@ export class Scene extends Mixins(ThreeComponent) {
       return null;
     }
 
-    return (
-      <div>
-        <div>{this.$slots.preload}</div>
-        <div>{this.m_isReady ? this.$slots.default : null}</div>
-      </div>
-    );
+    return h("div", [
+      h("div", this.$slots.preload),
+      h("div", this.m_isReady ? this.$slots.default : null)
+    ]);
   }
 }

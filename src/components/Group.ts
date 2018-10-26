@@ -1,11 +1,10 @@
 import * as THREE from "three";
 import { Component, Mixins, Prop, Provide } from "vue-property-decorator";
 
-import { AssetTypes, GeometryType, MaterialType } from "../types";
 import { ThreeComponent, ThreeObjectComponent, ThreeSceneComponent } from "./base";
 
 @Component
-export class Grid extends Mixins(
+export class Group extends Mixins(
   ThreeComponent,
   ThreeSceneComponent,
   ThreeObjectComponent
@@ -13,47 +12,40 @@ export class Grid extends Mixins(
   @Prop({ type: String, default: "" })
   private name!: string;
 
-  @Prop({ type: Number, default: 10 })
-  private size!: number;
-
-  @Prop({ type: Number, default: 10 })
-  private divisions!: number;
-
   @Provide("object")
-  private provideObject = this.getObject;
+  public provideObject = this.getObject;
 
-  private m_grid!: THREE.GridHelper;
+  private m_group!: THREE.Group;
   private m_created = false;
 
   public getObject(): THREE.Object3D {
-    return this.m_grid;
+    return this.m_group;
   }
 
   public async created() {
     if (!this.scene && !this.object) {
       throw new Error(
-        "Grid component can only be added as child to an object or mesh component"
+        "Group component can only be added as child to an object or scene component"
       );
     }
 
-    this.m_grid = new THREE.GridHelper(this.size, this.divisions);
-    this.m_grid.name = this.name;
-
+    this.m_group = new THREE.Group();
+    this.m_group.name = this.name;
     const parent = this.object ? this.object() : this.scene();
-    parent.add(this.m_grid);
+    parent.add(this.m_group);
 
     this.m_created = true;
   }
 
   public beforeDestroy() {
     const parent = this.object ? this.object() : this.scene();
-    parent.remove(this.m_grid);
+    parent.remove(this.m_group);
   }
 
   public render(h: any) {
     if (!this.m_created) {
       return null;
     }
-    return <div>{this.$slots.default}</div>;
+    return h("div", this.$slots.default);
   }
 }

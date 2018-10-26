@@ -86,6 +86,6 @@ export class Fog extends Mixins(ThreeComponent, ThreeSceneComponent) {
     if (!this.m_created) {
       return null;
     }
-    return <div />;
+    return h();
   }
 }

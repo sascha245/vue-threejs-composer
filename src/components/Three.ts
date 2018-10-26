@@ -1,3 +1,4 @@
+import { CreateElement } from "vue";
 import { Component, Prop, Provide, Vue, Watch } from "vue-property-decorator";
 
 import { Application } from "../core";
@@ -88,7 +89,10 @@ export class Three extends Vue {
     }
   }
 
-  public render(h: any) {
-    return <div>{this.isReady ? this.$slots.default : null}</div>;
+  public render(h: CreateElement) {
+    if (!this.isReady) {
+      return null;
+    }
+    return h("div", this.$slots.default);
   }
 }

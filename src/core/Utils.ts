@@ -1,5 +1,6 @@
-import { ModelType, TextureType } from "src/types";
 import * as THREE from "three";
+
+import { ModelType, TextureType } from "../types";
 
 const REGEXP_EXT = /(?:\.([^.]+))?$/;
 

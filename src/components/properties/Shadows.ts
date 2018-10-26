@@ -42,7 +42,7 @@ export class Shadows extends Mixins(ThreeObjectComponent) {
   }
 
   public render(h: any) {
-    return <div />;
+    return h();
   }
 
   private changeReceive(obj: THREE.Object3D) {

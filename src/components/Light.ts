@@ -1,10 +1,11 @@
 import * as THREE from "three";
-import { Component, Mixins, Prop, Provide } from "vue-property-decorator";
+import { Component, Mixins, Prop, Provide, Watch } from "vue-property-decorator";
 
+import { LightFactory } from "../types";
 import { ThreeComponent, ThreeObjectComponent, ThreeSceneComponent } from "./base";
 
 @Component
-export class Group extends Mixins(
+export class Light extends Mixins(
   ThreeComponent,
   ThreeSceneComponent,
   ThreeObjectComponent
@@ -12,40 +13,43 @@ export class Group extends Mixins(
   @Prop({ type: String, default: "" })
   private name!: string;
 
+  @Prop({ required: true, type: Function })
+  public factory!: LightFactory;
+
   @Provide("object")
   public provideObject = this.getObject;
 
-  private m_group!: THREE.Group;
+  private m_light!: THREE.Light;
   private m_created = false;
 
   public getObject(): THREE.Object3D {
-    return this.m_group;
+    return this.m_light;
   }
 
   public async created() {
     if (!this.scene && !this.object) {
       throw new Error(
-        "Group component can only be added as child to an object or scene component"
+        "Light component can only be added as child to an object or scene component"
       );
     }
 
-    this.m_group = new THREE.Group();
-    this.m_group.name = this.name;
+    this.m_light = await this.factory();
+    this.m_light.name = this.name;
     const parent = this.object ? this.object() : this.scene();
-    parent.add(this.m_group);
+    parent.add(this.m_light);
 
     this.m_created = true;
   }
 
   public beforeDestroy() {
     const parent = this.object ? this.object() : this.scene();
-    parent.remove(this.m_group);
+    parent.remove(this.m_light);
   }
 
   public render(h: any) {
     if (!this.m_created) {
       return null;
     }
-    return <div>{this.$slots.default}</div>;
+    return h("div", this.$slots.default);
   }
 }

@@ -51,6 +51,6 @@ export class Axes extends Mixins(
     if (!this.m_created) {
       return null;
     }
-    return <div>{this.$slots.default}</div>;
+    return h("div", this.$slots.default);
   }
 }

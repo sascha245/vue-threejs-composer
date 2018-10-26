@@ -41,6 +41,6 @@ export class Rotation extends Mixins(ThreeObjectComponent) {
   }
 
   public render(h: any) {
-    return <div />;
+    return h();
   }
 }

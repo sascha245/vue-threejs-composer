@@ -31,6 +31,6 @@ export class Property extends Mixins(ThreeObjectComponent) {
   }
 
   public render(h: any) {
-    return <div />;
+    return h();
   }
 }

@@ -74,6 +74,6 @@ export class Camera extends Mixins(ThreeComponent, ThreeSceneComponent) {
     if (!this.main || !this.m_created) {
       return null;
     }
-    return <div>{this.$slots.default}</div>;
+    return h("div", this.$slots.default);
   }
 }

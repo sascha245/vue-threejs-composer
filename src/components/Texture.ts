@@ -35,6 +35,6 @@ export class Texture extends Mixins(ThreeComponent, ThreeAssetComponent) {
   }
 
   public render(h: any) {
-    return <div />;
+    return h();
   }
 }
