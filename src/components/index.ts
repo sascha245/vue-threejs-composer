@@ -11,5 +11,6 @@ export * from "./Group";
 export * from "./Grid";
 export * from "./Axes";
 export * from "./Model";
+export * from "./Renderer";
 
 export * from "./properties";

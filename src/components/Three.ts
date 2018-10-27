@@ -7,41 +7,30 @@ import { Application } from "../core";
 export class Three extends Vue {
   private isReady = false;
 
-  @Prop({ required: true, type: HTMLCanvasElement })
-  public canvas!: HTMLCanvasElement;
-
-  @Prop({ default: false })
-  public antialias!: boolean;
-
   @Prop({ default: true, type: Boolean })
   public active!: boolean;
 
   @Provide("app")
-  public provideApp = this.app;
+  public provideApp = this.getApp;
 
   private _app!: Application;
   private _animationFrame?: number;
   private _lastUpdate?: number;
 
-  public app() {
+  public getApp() {
     return this._app;
   }
 
-  public async created() {
-    this._app = new Application({
-      antialias: this.antialias,
-      canvas: this.canvas
-    });
-    this.setRendererSize();
-
-    window.addEventListener("resize", this.onResize);
+  public created() {
+    this._app = new Application();
     this.onChangeActive();
     this.isReady = true;
+
+    (window as any).App = this._app;
   }
 
   public beforeDestroy() {
     this.onDeactivate();
-    window.removeEventListener("resize", this.onResize);
     if (this._app) {
       this._app.dispose();
     }
@@ -65,28 +54,16 @@ export class Three extends Vue {
   public onActivate() {
     if (!this._animationFrame) {
       this._lastUpdate = Date.now();
-      this.onRender();
+      this.onUpdate();
     }
   }
 
-  public onRender() {
+  public onUpdate() {
     const now = Date.now();
     const deltaTime = (now - this._lastUpdate!) * 0.001;
-    this._animationFrame = requestAnimationFrame(this.onRender);
+    this._animationFrame = requestAnimationFrame(this.onUpdate);
     this._app.update(deltaTime);
     this._lastUpdate = now;
-  }
-
-  private onResize() {
-    this.setRendererSize();
-  }
-
-  private setRendererSize() {
-    const width = this.canvas.scrollWidth;
-    const height = this.canvas.scrollHeight;
-    if (this._app) {
-      this._app.setSize(width, height);
-    }
   }
 
   public render(h: CreateElement) {

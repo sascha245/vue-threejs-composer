@@ -1,6 +1,6 @@
 {
   "name": "vue-threejs-composer",
-  "version": "0.3.1",
+  "version": "0.4.0",
   "main": "build/src/index.js",
   "typings": "build/src/index.d.ts",
   "repository": "https://github.com/sascha245/vue-threejs-composer",

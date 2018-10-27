@@ -6,11 +6,8 @@ import { ThreeComponent, ThreeSceneComponent } from "./base";
 
 @Component
 export class Camera extends Mixins(ThreeComponent, ThreeSceneComponent) {
-  @Prop({ type: String, default: "" })
+  @Prop({ required: true, type: String })
   private name!: string;
-
-  @Prop({ default: true, type: Boolean })
-  private main!: boolean;
 
   @Prop({ required: true, type: Function })
   public factory!: CameraFactory;
@@ -18,7 +15,6 @@ export class Camera extends Mixins(ThreeComponent, ThreeSceneComponent) {
   @Provide("object")
   public provideObject = this.object;
 
-  private m_isMain = false;
   private m_created = false;
   private m_camera!: THREE.Camera;
 
@@ -26,52 +22,19 @@ export class Camera extends Mixins(ThreeComponent, ThreeSceneComponent) {
     return this.m_camera;
   }
 
-  @Watch("main")
-  public async onChangeMain() {
-    const manager = this.app().cameraManager;
-
-    if (this.main) {
-      await Vue.nextTick();
-    }
-
-    this.m_isMain =
-      manager.main && manager.main !== this.m_camera ? false : this.main;
-    if (this.m_isMain !== this.main) {
-      this.$emit("update:main", this.m_isMain);
-    }
-    if (this.m_isMain) {
-      this.onActivate();
-    } else {
-      this.onDeactivate();
-    }
-  }
-
-  public onDeactivate() {
-    const manager = this.app().cameraManager;
-    if (this.m_camera === manager.main) {
-      manager.main = undefined;
-    }
-  }
-
-  public async onActivate() {
-    const manager = this.app().cameraManager;
-    manager.main = this.m_camera;
-  }
-
   public async created() {
-    this.m_camera = await this.factory(this.app().renderer.getSize());
+    this.m_camera = await this.factory(this.app());
     this.m_camera.name = this.name;
-    this.onChangeMain();
-
+    this.app().cameraManager.set(this.name, this.m_camera);
     this.m_created = true;
   }
 
   public beforeDestroy() {
-    this.onDeactivate();
+    this.app().cameraManager.remove(this.name);
   }
 
   public render(h: any) {
-    if (!this.main || !this.m_created) {
+    if (!this.m_created) {
       return null;
     }
     return h("div", this.$slots.default);
