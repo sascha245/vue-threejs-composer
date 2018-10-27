@@ -25,8 +25,6 @@ export class Three extends Vue {
     this._app = new Application();
     this.onChangeActive();
     this.isReady = true;
-
-    (window as any).App = this._app;
   }
 
   public beforeDestroy() {

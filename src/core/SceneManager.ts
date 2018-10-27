@@ -4,8 +4,6 @@ import { Scene } from "three";
 export type SceneManagerHook = "change" | "activate" | "deactivate";
 
 export class SceneManager {
-  private _activeScene?: Scene;
-
   private _scenes = new Map<string, Scene>();
   private _hooks = new EventEmitter();
   private _uses = new Map<string, number>();
@@ -57,12 +55,5 @@ export class SceneManager {
       return;
     }
     this._uses.set(name, usages - 1);
-  }
-
-  public get active() {
-    return this._activeScene;
-  }
-  public set active(val) {
-    this._activeScene = val;
   }
 }

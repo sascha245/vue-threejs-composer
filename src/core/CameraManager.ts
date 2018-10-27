@@ -4,8 +4,6 @@ import { Camera } from "three";
 export type CameraManagerHook = "change";
 
 export class CameraManager {
-  private _mainCamera?: Camera;
-
   private _cameras: Map<string, Camera> = new Map();
   private _hooks = new EventEmitter();
   private _uses = new Map<string, number>();
@@ -45,12 +43,5 @@ export class CameraManager {
       return;
     }
     this._uses.set(name, usages - 1);
-  }
-
-  public get main() {
-    return this._mainCamera;
-  }
-  public set main(val) {
-    this._mainCamera = val;
   }
 }
