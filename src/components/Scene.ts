@@ -10,63 +10,106 @@ export class Scene extends Mixins(ThreeComponent) {
   @Prop({ type: String, default: "" })
   public name!: string;
 
-  @Prop({ default: false, type: Boolean })
-  public active!: boolean;
-
   @Provide("scene")
-  public provideScene = this.getScene;
+  private provideScene = this.getScene;
 
-  private m_isReady = false;
-  private m_isActive = false;
-  private m_scene?: THREE.Scene;
-
-  public getScene() {
+  private getScene() {
     return this.m_scene;
   }
 
-  @Watch("active")
-  public async onChangeActive() {
-    const manager = this.app().sceneManager;
+  private m_isActive = false;
+  private m_isReady = false;
+  private m_scene?: THREE.Scene;
 
-    if (this.active) {
-      await Vue.nextTick();
-    }
-
-    this.m_isActive =
-      manager.active && manager.active !== this.m_scene ? false : this.active;
-    if (this.m_isActive !== this.active) {
-      this.$emit("update:active", this.m_isActive);
-    }
-    if (this.m_isActive) {
-      this.onActivate();
-    } else {
+  @Watch("name")
+  private watchName() {
+    if (this.m_scene) {
       this.onDeactivate();
+    }
+    const isActive = this.app().sceneManager.isUsed(this.name);
+    if (isActive) {
+      this.onActivate();
     }
   }
 
   public async onDeactivate() {
-    const manager = this.app().sceneManager;
-    if (this.m_scene === manager.active) {
-      manager.active = undefined;
-    }
+    // deactive children
     this.m_isReady = false;
 
     await Vue.nextTick();
 
+    if (this.m_scene) {
+      this.app().sceneManager.remove(this.m_scene.name);
+    }
+    this.m_isActive = false;
     this.m_scene = undefined;
   }
 
   public async onActivate() {
-    const manager = this.app().sceneManager;
     this.m_scene = new THREE.Scene();
     this.m_scene.name = this.name;
-    manager.active = this.m_scene;
 
+    // tell the component to render the component (see render)
+    this.m_isActive = true;
+    // wait for preload components to load...
     await Vue.nextTick();
-    await this.preloadAssets();
 
+    // now preload
+    await this.preloadAssets();
+    this.app().sceneManager.set(this.name, this.m_scene);
     this.m_isReady = true;
   }
+
+  public mounted() {
+    const manager = this.app().sceneManager;
+    manager.on("activate", this.onSceneActivate);
+    manager.on("deactivate", this.onSceneDeactivate);
+    this.watchName();
+  }
+
+  public beforeDestroy() {
+    const manager = this.app().sceneManager;
+    manager.off("activate", this.onSceneActivate);
+    manager.off("deactivate", this.onSceneDeactivate);
+    this.onDeactivate();
+  }
+
+  public render(h: any) {
+    if (!this.m_isActive) {
+      return null;
+    }
+
+    return h("div", [
+      h("div", this.$slots.preload),
+      h("div", this.m_isReady ? this.$slots.default : null)
+    ]);
+  }
+
+  private async preloadAssets() {
+    this.$emit("load");
+
+    const data: { counter: number; assets: Array<Promise<AssetType>> } = {
+      assets: [],
+      counter: 0
+    };
+    this.recursivePreload(data, this.$slots.preload);
+
+    await Promise.all(data.assets);
+    this.$emit("loaded");
+  }
+
+  private onSceneActivate = (sceneName: string) => {
+    if (sceneName !== this.name) {
+      return;
+    }
+    this.onActivate();
+  };
+  private onSceneDeactivate = (sceneName: string) => {
+    if (sceneName !== this.name) {
+      return;
+    }
+    this.onDeactivate();
+  };
 
   private recursivePreload(
     data: { counter: number; assets: Array<Promise<AssetType>> },
@@ -86,37 +129,5 @@ export class Scene extends Mixins(ThreeComponent) {
         this.recursivePreload(data, node.children);
       }
     }
-  }
-
-  public async preloadAssets() {
-    this.$emit("load");
-
-    const data: { counter: number; assets: Array<Promise<AssetType>> } = {
-      assets: [],
-      counter: 0
-    };
-    this.recursivePreload(data, this.$slots.preload);
-
-    await Promise.all(data.assets);
-    this.$emit("loaded");
-  }
-
-  public mounted() {
-    this.onChangeActive();
-  }
-
-  public beforeDestroy() {
-    this.onDeactivate();
-  }
-
-  public render(h: any) {
-    if (!this.m_isActive) {
-      return null;
-    }
-
-    return h("div", [
-      h("div", this.$slots.preload),
-      h("div", this.m_isReady ? this.$slots.default : null)
-    ]);
   }
 }

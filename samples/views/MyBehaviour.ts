@@ -26,10 +26,7 @@ export class MyBehaviour extends Mixins(Behaviour) {
       throw new Error("Could not initialize MyBehaviour: data is missing");
     }
     this.camera = new THREE.PerspectiveCamera();
-    this.controls = new OrbitControls(
-      this.camera,
-      this.app().renderer.domElement
-    );
+    this.controls = new OrbitControls(this.camera);
     this.camera.position.set(
       this.data!.position.x,
       this.data!.position.y,

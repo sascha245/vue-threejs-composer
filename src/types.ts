@@ -24,10 +24,8 @@ export type ModelFactory = (app: Application) => Promise<ModelType>;
 export type GeometryFactory = (app: Application) => Promise<GeometryType>;
 export type MaterialFactory = (app: Application) => Promise<MaterialType>;
 export type TextureFactory = (app: Application) => Promise<TextureType>;
-export type LightFactory = () => Promise<THREE.Light>;
-export type CameraFactory = (
-  size: { width: number; height: number }
-) => Promise<THREE.Camera>;
+export type LightFactory = (app: Application) => Promise<THREE.Light>;
+export type CameraFactory = (app: Application) => Promise<THREE.Camera>;
 
 export interface DisposableAsset {
   dispose?: () => void;

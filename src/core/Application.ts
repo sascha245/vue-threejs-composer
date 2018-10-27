@@ -1,57 +1,33 @@
 import { EventEmitter } from "events";
-import * as THREE from "three";
 
 import { AssetManager } from "../core/AssetManager";
 import { CameraManager } from "../core/CameraManager";
 import { InputManager } from "../core/InputManager";
 import { SceneManager } from "../core/SceneManager";
+import { RendererManager } from "./RendererManager";
 
-export type ApplicationHook = "update";
+export type ApplicationHook =
+  | "update"
+  | "beforeRender"
+  | "afterRender"
+  | "ready";
 
 export class Application {
-  public assets: AssetManager;
-  public inputs: InputManager;
-  public renderer: THREE.WebGLRenderer;
-  public sceneManager: SceneManager;
-  public cameraManager: CameraManager;
+  public readonly sceneManager = new SceneManager();
+  public readonly cameraManager = new CameraManager();
+  public readonly renderers = new RendererManager(this);
+  public readonly assets = new AssetManager();
+  public readonly inputs = new InputManager();
 
-  public disposed = false;
-
-  private _hooks: EventEmitter;
-
-  constructor(rendererOptions: THREE.WebGLRendererParameters) {
-    this._hooks = new EventEmitter();
-
-    this.assets = new AssetManager();
-    this.inputs = new InputManager();
-    this.sceneManager = new SceneManager();
-    this.cameraManager = new CameraManager();
-    this.renderer = new THREE.WebGLRenderer(rendererOptions);
-
-    this.renderer.shadowMap.enabled = true;
-    this.renderer.shadowMap.type = THREE.PCFSoftShadowMap; // default THREE.PCFShadowMap
-    // this.renderer.shadowMap.type = THREE.PCFShadowMap; // default THREE.PCFShadowMap
-
-    this.renderer.setClearColor(new THREE.Color("#dddddd"));
+  private _disposed = false;
+  public get isDisposed() {
+    return this._disposed;
   }
 
-  public dispose() {
-    this.renderer.dispose();
-    this.inputs.dispose();
-    this.disposed = true;
-  }
+  private _hooks = new EventEmitter();
 
-  public setSize(width: number, height: number) {
-    const camera = this.cameraManager.main;
-    if (camera) {
-      // if (camera instanceof THREE.PerspectiveCamera) {
-      //   camera.aspect = width / height;
-      //   camera.updateProjectionMatrix();
-      // }
-    }
-    if (this.renderer) {
-      this.renderer.setSize(width, height);
-    }
+  constructor() {
+    this._hooks.setMaxListeners(Infinity);
   }
 
   public on(type: ApplicationHook, fn: (...args: any[]) => void) {
@@ -61,18 +37,20 @@ export class Application {
     this._hooks.removeListener(type, fn);
   }
 
-  public update(deltaTime: number) {
-    const scene = this.sceneManager.active;
-    const camera = this.cameraManager.main;
+  public ready() {
+    this._hooks.emit("ready");
+  }
 
+  public update(deltaTime: number) {
     this.inputs.update();
     this._hooks.emit("update", deltaTime);
+    this._hooks.emit("beforeRender");
+    this.renderers.render();
+    this._hooks.emit("afterRender");
+  }
 
-    if (this.renderer) {
-      this.renderer.clearColor();
-      if (scene && camera) {
-        this.renderer.render(scene, camera);
-      }
-    }
+  public dispose() {
+    this.inputs.dispose();
+    this._disposed = true;
   }
 }

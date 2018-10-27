@@ -7,6 +7,7 @@ import {
     Application, AssetTypes, CameraFactory, components, GeometryFactory, LightFactory,
     MaterialFactory
 } from "../../src";
+import { HoverBehaviour } from "./HoverBehaviour";
 import { MyBehaviour } from "./MyBehaviour";
 
 (window as any).THREE = THREE;
@@ -14,7 +15,8 @@ import { MyBehaviour } from "./MyBehaviour";
 @Component({
   components: {
     ...components,
-    MyBehaviour
+    MyBehaviour,
+    HoverBehaviour
   }
 })
 export default class About extends Vue {
@@ -42,10 +44,10 @@ export default class About extends Vue {
   public cameraFactory: CameraFactory | null = null;
 
   public canvas: HTMLCanvasElement | null = null;
+  public canvas2: HTMLCanvasElement | null = null;
 
   public scene1 = {
-    name: "First scene",
-    active: true,
+    name: "scene1",
     camera: {
       position: {
         x: 0,
@@ -58,33 +60,17 @@ export default class About extends Vue {
         z: 0
       }
     },
-
-    fields: [
-      {
-        id: "someId-0",
-        x: 0,
-        y: 0
-      },
-      {
-        id: "someId-1",
-        x: 1,
-        y: 0
-      },
-      {
-        id: "someId-2",
-        x: 2,
-        y: 0
-      }
-    ]
+    fields: new Array()
   };
   public scene2 = {
-    name: "Second scene",
-    active: true
+    name: "scene2"
   };
 
   public isLoading = true;
   public loadingAmount = 0;
   public loadingTotal = 0;
+
+  public activeScene = this.scene1.name;
 
   public scenes = [this.scene1, this.scene2];
 
@@ -103,15 +89,27 @@ export default class About extends Vue {
   }
 
   public changeScene(pScene: any) {
-    this.scenes.forEach(scene => {
-      scene.active = false;
-    });
-    pScene.active = true;
+    this.activeScene = pScene.name;
+    // this.scenes.forEach(scene => {
+    //   scene.active = false;
+    // });
+    // pScene.active = true;
     console.log("about scene change", this.scenes);
   }
 
   public created() {
-    console.log(this.scene1);
+    let idx = 0;
+    for (let x = 0; x < 5; ++x) {
+      for (let z = 0; z < 5; ++z) {
+        this.scene1.fields.push({
+          x,
+          z,
+          id: `field_${idx}`,
+          y: 0
+        });
+        ++idx;
+      }
+    }
 
     this.cubeFactory = async () => {
       // await new Promise(r => setTimeout(r, 2000));
@@ -158,13 +156,13 @@ export default class About extends Vue {
       return light;
     };
 
-    this.cameraFactory = async ({ width, height }) => {
+    this.cameraFactory = async () => {
       const viewAngle = 60;
       const nearClipping = 0.1;
       const farClipping = 1000;
       return new THREE.PerspectiveCamera(
         viewAngle,
-        width / height,
+        window.innerWidth / window.innerHeight,
         nearClipping,
         farClipping
       );
@@ -173,5 +171,25 @@ export default class About extends Vue {
 
   public mounted() {
     this.canvas = this.$refs.canvas as HTMLCanvasElement;
+    this.canvas2 = this.$refs.canvas2 as HTMLCanvasElement;
   }
 }
+
+// <!-- Asset management update ideas: allow to split up and depend on asset bundles (that can be either preloaded or loaded during runtime) -->
+// <!-- <assets-bundle name="PolygonMini" preload>
+//     <texture name="PolygonMini_Tex" src="/assets/textures/PolygonMinis_Texture_01.png"/>
+//     <material name="PolygonMini_Mat" :factory="polygonMaterialFactory"/>
+
+//     <model name="grassModel" src="/assets/models/SM_Env_Grass_01.fbx" materials="PolygonMini_Mat"/>
+//     <model name="PM_column" src="/assets/models/SM_Tile_Hex_Column_02.fbx" materials="PolygonMini_Mat"/>
+//     <model name="PM_flat" src="/assets/models/SM_Tile_Hex_Flat_01.fbx" materials="PolygonMini_Mat"/>
+// </assets-bundle>
+
+// <assets-bundle name="crate" preload>
+//     <texture name="crateTex" src="/assets/textures/crate.jpg"/>
+// </assets-bundle>
+
+// <assets-bundle name="Scene1" dependencies="crate" preload>
+//     <geometry name="cube" :factory="cubeFactory"/>
+//     <material name="cubeMat" :factory="cubeMaterialFactory"/>
+// </assets-bundle> -->

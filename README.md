@@ -185,3 +185,4 @@ This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md
 ## Acknowledgments
 
 - First version of a input manager based on [pinput](https://github.com/ichub/pinput)
+- Handling of multiple renderer inspired by [vue-gl](https://github.com/vue-gl/vue-gl)

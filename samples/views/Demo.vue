@@ -8,19 +8,23 @@
       <button @click="changeScene(scene2)">Scene 2</button>
     </div>
 
-    <div class="screen">
-      <canvas ref="canvas" class="screen-canvas"></canvas>
-      <div class="screen-loading" v-if="isLoading">
-        <div>
-          <p>Loading...</p>
-          <p>{{loadingAmount}} / {{loadingTotal}}</p>
+    <div>
+      <div class="screen">
+        <canvas ref="canvas" class="screen-canvas"></canvas>
+        <div class="screen-loading" v-if="isLoading">
+          <div>
+            <p>Loading...</p>
+            <p>{{loadingAmount}} / {{loadingTotal}}</p>
+          </div>
         </div>
       </div>
     </div>
-    <div v-if="canvas">
-      <three :canvas="canvas" antialias>
 
-        <scene :name="scene1.name" :active.sync="scene1.active" @load="startLoading" @load-progress="loadingProgress" @loaded="finishLoading">
+    <div v-if="canvas">
+      <three>
+        <renderer :canvas="canvas" camera="main" :scene="activeScene" antialias shadows/>
+
+        <scene name="scene1" @load="startLoading" @load-progress="loadingProgress" @loaded="finishLoading">
           <template slot="preload">
             <div>
               <texture name="crateTex" src="/assets/textures/crate.jpg"/>
@@ -43,15 +47,20 @@
 
           <fog exp2/>
 
-          <camera :factory="cameraFactory">
+          <camera name="main" :factory="cameraFactory">
             <position :value="scene1.camera.position"/>
             <rotation :value="scene1.camera.rotation" rad/>
 
             <my-behaviour :data="scene1.camera"/>
           </camera>
 
+          <camera name="secondary" :factory="cameraFactory">
+            <position :value="{ x: 0, y: 10, z: 0 }"/>
+            <rotation :value="{ x: -90, y: 0, z: 0 }"/>
+          </camera>
+
           <light name="sun" :factory="lightFactory">
-            <position :value="{x: 0, y: 10, z: 0}"/>
+            <position :value="{x: -5, y: 10, z: -5}"/>
             <shadows cast/>
           </light>
 
@@ -95,15 +104,17 @@
               geometry="cube"
               material="cubeMat"
               >
-              <position :value="{ x: field.x * 2, y: 0.5, z: field.y * 2}"/>
+              <position :value="{ x: field.x * 2, y: field.y + 5, z: field.z * -2}"/>
               <scale :value="{ x: 1.2, y: 1.2, z: 1.2}"/>
               <shadows cast receive/>
+
+              <!-- <hover-behaviour :position="field" :distance="5"/> -->
             </mesh>
           </group>
 
         </scene>
 
-        <scene :name="scene2.name" :active.sync="scene2.active" @load="startLoading" @load-progress="loadingProgress" @loaded="finishLoading">
+        <scene name="scene2" @load="startLoading" @load-progress="loadingProgress" @loaded="finishLoading">
           <!-- <template slot="preload">
             <material name="scene2_mat" :factory="materialFactory"/>
             <geometry name="scene2_field" :factory="geometryFactory"/>
@@ -121,16 +132,27 @@
 </template>
 
 <style>
+.fullscreen {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+  z-index: -1;
+}
+
 .screen {
   position: relative;
-  width: 80%;
-  height: auto;
-  margin: auto;
-  max-height: 100vh;
+  width: 100%;
+  height: 100%;
+  /* height: auto; */
+  /* margin: auto; */
+  /* max-height: 100vh; */
 }
 .screen-canvas {
   width: 100% !important;
-  height: auto !important;
+  height: 100% !important;
   max-height: 100vh;
 }
 .screen-loading {

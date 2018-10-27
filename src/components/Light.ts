@@ -33,7 +33,7 @@ export class Light extends Mixins(
       );
     }
 
-    this.m_light = await this.factory();
+    this.m_light = await this.factory(this.app());
     this.m_light.name = this.name;
     const parent = this.object ? this.object() : this.scene();
     parent.add(this.m_light);
