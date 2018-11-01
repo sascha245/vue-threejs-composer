@@ -34,6 +34,16 @@
           <model name="PM_flat" src="/assets/models/SM_Tile_Hex_Flat_01.fbx" materials="PolygonMini_Mat"/>
         </asset-bundle>
 
+        <asset-bundle name="PolygonDungeon" preload>
+          <texture name="PolygonDungeon_Tex" src="/assets/textures/Dungeons_Texture_01.png"/>
+
+          <material name="PolygonDungeon_Mat" :factory="polygonDungeonFactory"/>
+
+          <model name="PD_dandelion1" src="/assets/models/SM_Env_Tree_Dandelion_01.fbx" materials="PolygonDungeon_Mat"/>
+          <model name="PD_dandelion2" src="/assets/models/SM_Env_Tree_Dandelion_02.fbx" materials="PolygonDungeon_Mat"/>
+          <model name="PD_dandelion3" src="/assets/models/SM_Env_Tree_Dandelion_03.fbx" materials="PolygonDungeon_Mat"/>
+        </asset-bundle>
+
         <asset-bundle name="Crate" preload>
           <texture name="crateTex" src="/assets/textures/crate.jpg"/>
           <material name="cubeMat" :factory="cubeMaterialFactory"/>
@@ -47,7 +57,7 @@
 
         </asset-bundle>
 
-        <scene name="scene1" assets="PolygonMini, Scene1, Crate, Crate" @load="startLoading" @load-progress="loadingProgress" @loaded="finishLoading">
+        <scene name="scene1" assets="PolygonMini, PolygonDungeon, Scene1, Crate, Crate" @load="startLoading" @load-progress="loadingProgress" @loaded="finishLoading">
 
           <fog exp2/>
 
@@ -90,6 +100,12 @@
               <shadows cast receive recursive/>
             </mesh>
 
+            <mesh model="PD_dandelion1">
+              <position :value="{ x: -10, y: 3, z: 10 }"/>
+              <!-- <scale :value="{ x: 0.05, y: 0.05, z: 0.05 }"/> -->
+              <shadows cast receive recursive/>
+            </mesh>
+
             <group>
               <position :value="{ x: 10, y: 3, z: 10 }"/>
               <scale :value="{ x: 0.01, y: 0.01, z: 0.01 }"/>
@@ -118,16 +134,39 @@
 
         </scene>
 
-        <scene name="scene2" assets="PolygonMini, Scene1, Crate, Crate" @load="startLoading" @load-progress="loadingProgress" @loaded="finishLoading">
-          <!-- <template slot="preload">
-            <material name="scene2_mat" :factory="materialFactory"/>
-            <geometry name="scene2_field" :factory="geometryFactory"/>
-          </template>
+        <scene name="scene2" assets="PolygonMini, PolygonDungeon, Scene1, Crate, Crate" @load="startLoading" @load-progress="loadingProgress" @loaded="finishLoading">
 
-          <camera name="menuCamera"/>
-          <mesh name="y-1" geometry="field"/>
-          <mesh name="y-2" geometry="field"/>
-          <mesh name="y-3" geometry="edge"/> -->
+          <fog exp2/>
+
+          <camera name="main" :factory="cameraFactory">
+            <position :value="scene1.camera.position"/>
+            <rotation :value="scene1.camera.rotation" rad/>
+
+            <my-behaviour :data="scene1.camera"/>
+          </camera>
+
+          <camera name="secondary" :factory="cameraFactory">
+            <position :value="{ x: 0, y: 10, z: 0 }"/>
+            <rotation :value="{ x: -90, y: 0, z: 0 }"/>
+          </camera>
+
+          <light name="sun" :factory="lightFactory">
+            <position :value="{x: -5, y: 10, z: -5}"/>
+            <shadows cast/>
+          </light>
+
+          <mesh name="waterPlane" geometry="plane" material="waterMat">
+            <rotation :value="{ x: -90, y: 0, z: 0 }"/>
+            <shadows receive/>
+          </mesh>
+
+
+          <mesh model="PD_dandelion1">
+            <position :value="{ x: -10, y: 3, z: 10 }"/>
+            <!-- <scale :value="{ x: 0.05, y: 0.05, z: 0.05 }"/> -->
+            <shadows cast receive recursive/>
+          </mesh>
+
         </scene>
 
       </three>

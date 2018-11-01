@@ -21,8 +21,10 @@ export class AssetBundle extends Mixins(ThreeComponent) {
   public mounted() {
     const manager = this.app().assets;
     this.m_bundle = manager.createBundle(this.name);
-    this.m_bundle.onload = this.onLoadBundle;
-    this.m_bundle.onunload = this.onUnloadBundle;
+
+    this.m_bundle.on("load", this.onLoadBundle);
+    this.m_bundle.on("unload", this.onUnloadBundle);
+
     // TODO handle preload on / off
     // this.m_bundle.preload = this.preload;
   }
@@ -43,18 +45,19 @@ export class AssetBundle extends Mixins(ThreeComponent) {
     this.m_isActive = true;
 
     const bundles = this.getBundles(this.dependencies);
-    const deps = this.m_bundle.registerDependencies(bundles);
+    const depsPromises = this.m_bundle.registerDependencies(bundles);
 
     await Vue.nextTick();
-    await deps;
-
-    console.log("load assets for bundle ", this.name);
+    await depsPromises;
 
     this.registerAssets(this.$slots.default);
+
+    // console.log("registration for bundle done", this.name);
   }
 
   private async onUnloadBundle() {
     this.m_isActive = false;
+    await Vue.nextTick();
   }
 
   private registerAssets(nodes: VNode[] | undefined) {

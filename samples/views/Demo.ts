@@ -39,6 +39,23 @@ export default class About extends Vue {
     mat.map = texture as THREE.Texture;
     return mat;
   };
+  public polygonDungeonFactory: MaterialFactory = async (app: Application) => {
+    const texture = await app.assets.get(
+      "PolygonDungeon_Tex",
+      AssetTypes.TEXTURE
+    );
+
+    if (!texture) {
+      throw new Error("Could not find 'PolygonDungeon_Tex' texture");
+    }
+
+    const mat = new THREE.MeshStandardMaterial({
+      color: "#eeeeee",
+      metalness: 0.01
+    });
+    mat.map = texture as THREE.Texture;
+    return mat;
+  };
 
   public lightFactory: LightFactory | null = null;
   public cameraFactory: CameraFactory | null = null;

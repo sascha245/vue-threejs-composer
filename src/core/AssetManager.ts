@@ -18,7 +18,16 @@ export class AssetManager {
   }
 
   public createBundle(name: string) {
-    const bundle = new AssetBundle(this._app);
+    const bundle = new AssetBundle(name);
+    this._bundles.set(name, bundle);
+    return bundle;
+  }
+  public setBundle(name: string, bundle: AssetBundle) {
+    if (this._bundles.has(name)) {
+      throw new Error(
+        `AssetBundle "${name}" could not be added: bundle with this name already exists`
+      );
+    }
     this._bundles.set(name, bundle);
     return bundle;
   }

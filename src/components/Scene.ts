@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import { __await } from "tslib";
 import { VNode } from "vue";
 import { Component, Mixins, Prop, Provide, Vue, Watch } from "vue-property-decorator";
 
@@ -41,9 +42,12 @@ export class Scene extends Mixins(ThreeComponent) {
     // deactive children
     this.m_isReady = false;
 
-    console.log("scene bundle unuse");
+    // console.log("scene bundle unuse");
 
     await this.m_bundle.unuse();
+
+    // console.log("scene bundle unloaded!");
+
     await Vue.nextTick();
 
     if (this.m_scene) {
@@ -61,19 +65,26 @@ export class Scene extends Mixins(ThreeComponent) {
     // tell the component to render the component (see render)
     this.m_isActive = true;
 
+    await Vue.nextTick();
+
     // now preload
     await this.preloadAssets();
+
     this.app().sceneManager.set(this.name, this.m_scene);
     this.m_isReady = true;
   }
 
   public mounted() {
-    this.m_bundle = new AssetBundle(this.app());
-    this.m_bundle.onload = async () => {
+    this.m_bundle = new AssetBundle();
+    this.m_bundle.on("load", async () => {
       const bundles = this.getBundles(this.assets);
-      console.log("scene load bundles", bundles);
+      // console.log("scene load bundles", bundles);
       await this.m_bundle.registerDependencies(bundles);
-    };
+    });
+    this.m_bundle.on("progress", (amount: number, total: number) => {
+      // console.log("scene on progress", amount, total);
+      this.$emit("load-progress", amount, total);
+    });
 
     const manager = this.app().sceneManager;
     manager.on("activate", this.onSceneActivate);
@@ -94,34 +105,17 @@ export class Scene extends Mixins(ThreeComponent) {
     if (!this.m_isActive || !this.m_isReady) {
       return null;
     }
-
     return h("div", this.$slots.default);
   }
 
   private async preloadAssets() {
     this.$emit("load");
 
-    const data = {
-      count: 0,
-      amount: 0
-    };
-
-    const progressListener = () => {
-      ++data.amount;
-      console.log(data.amount, data.count);
-      this.$emit("load-progress", data.amount, data.count);
-    };
-
-    await this.m_bundle.use(progressListener);
-
-    // we can now count assets to be loaded..
-    data.count = AssetBundle.countAssets([this.m_bundle]);
-
-    console.log("count", data.count);
-
+    await this.m_bundle.use();
+    // console.log("all bundles registrated");
     await this.m_bundle.isReady();
 
-    console.log("loaded!");
+    // console.log("loaded!");
     this.$emit("loaded");
   }
 
