@@ -15,7 +15,7 @@ export class Model extends Mixins(ThreeComponent, ThreeAssetComponent) {
   @Prop({ type: String })
   public src!: string;
 
-  @Prop({ default: [] })
+  @Prop({ type: [String, Array], default: () => [] })
   public materials!: string | string[];
 
   public async created() {

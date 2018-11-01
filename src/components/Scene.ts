@@ -2,13 +2,17 @@ import * as THREE from "three";
 import { VNode } from "vue";
 import { Component, Mixins, Prop, Provide, Vue, Watch } from "vue-property-decorator";
 
-import { AssetType } from "../types";
-import { isThreeAssetComponent, ThreeAssetComponent, ThreeComponent } from "./base";
+import { AssetBundle } from "../core";
+import { AssetType, OnLoadAssetBundleData } from "../types";
+import { isThreeAssetComponent, ThreeComponent } from "./base";
 
 @Component
 export class Scene extends Mixins(ThreeComponent) {
   @Prop({ type: String, default: "" })
   public name!: string;
+
+  @Prop({ type: [String, Array], default: () => [] })
+  public assets!: string | string[];
 
   @Provide("scene")
   private provideScene = this.getScene;
@@ -20,6 +24,7 @@ export class Scene extends Mixins(ThreeComponent) {
   private m_isActive = false;
   private m_isReady = false;
   private m_scene?: THREE.Scene;
+  private m_bundle!: AssetBundle;
 
   @Watch("name")
   private watchName() {
@@ -36,11 +41,15 @@ export class Scene extends Mixins(ThreeComponent) {
     // deactive children
     this.m_isReady = false;
 
+    console.log("scene bundle unuse");
+
+    await this.m_bundle.unuse();
     await Vue.nextTick();
 
     if (this.m_scene) {
       this.app().sceneManager.remove(this.m_scene.name);
     }
+
     this.m_isActive = false;
     this.m_scene = undefined;
   }
@@ -51,8 +60,6 @@ export class Scene extends Mixins(ThreeComponent) {
 
     // tell the component to render the component (see render)
     this.m_isActive = true;
-    // wait for preload components to load...
-    await Vue.nextTick();
 
     // now preload
     await this.preloadAssets();
@@ -61,6 +68,13 @@ export class Scene extends Mixins(ThreeComponent) {
   }
 
   public mounted() {
+    this.m_bundle = new AssetBundle(this.app());
+    this.m_bundle.onload = async () => {
+      const bundles = this.getBundles(this.assets);
+      console.log("scene load bundles", bundles);
+      await this.m_bundle.registerDependencies(bundles);
+    };
+
     const manager = this.app().sceneManager;
     manager.on("activate", this.onSceneActivate);
     manager.on("deactivate", this.onSceneDeactivate);
@@ -68,6 +82,8 @@ export class Scene extends Mixins(ThreeComponent) {
   }
 
   public beforeDestroy() {
+    this.m_bundle.unuse();
+
     const manager = this.app().sceneManager;
     manager.off("activate", this.onSceneActivate);
     manager.off("deactivate", this.onSceneDeactivate);
@@ -75,26 +91,37 @@ export class Scene extends Mixins(ThreeComponent) {
   }
 
   public render(h: any) {
-    if (!this.m_isActive) {
+    if (!this.m_isActive || !this.m_isReady) {
       return null;
     }
 
-    return h("div", [
-      h("div", this.$slots.preload),
-      h("div", this.m_isReady ? this.$slots.default : null)
-    ]);
+    return h("div", this.$slots.default);
   }
 
   private async preloadAssets() {
     this.$emit("load");
 
-    const data: { counter: number; assets: Array<Promise<AssetType>> } = {
-      assets: [],
-      counter: 0
+    const data = {
+      count: 0,
+      amount: 0
     };
-    this.recursivePreload(data, this.$slots.preload);
 
-    await Promise.all(data.assets);
+    const progressListener = () => {
+      ++data.amount;
+      console.log(data.amount, data.count);
+      this.$emit("load-progress", data.amount, data.count);
+    };
+
+    await this.m_bundle.use(progressListener);
+
+    // we can now count assets to be loaded..
+    data.count = AssetBundle.countAssets([this.m_bundle]);
+
+    console.log("count", data.count);
+
+    await this.m_bundle.isReady();
+
+    console.log("loaded!");
     this.$emit("loaded");
   }
 
@@ -111,23 +138,29 @@ export class Scene extends Mixins(ThreeComponent) {
     this.onDeactivate();
   };
 
-  private recursivePreload(
-    data: { counter: number; assets: Array<Promise<AssetType>> },
-    nodes: VNode[] | undefined
-  ) {
-    if (nodes) {
-      for (const node of nodes) {
-        const component = node.componentInstance;
-        if (component && isThreeAssetComponent(component)) {
-          const p = component.asset.then(asset => {
-            ++data.counter;
-            this.$emit("load-progress", data.counter, data.assets.length);
-            return asset;
-          });
-          data.assets.push(p);
-        }
-        this.recursivePreload(data, node.children);
-      }
+  private getBundles(dependencies: string | string[]): AssetBundle[] {
+    const manager = this.app().assets;
+    const bundles: AssetBundle[] = [];
+
+    if (!dependencies) {
+      return bundles;
     }
+    if (typeof dependencies === "string") {
+      dependencies = dependencies.split(",").map(mat => mat.trim());
+    }
+    if (!Array.isArray(dependencies)) {
+      throw new Error(
+        `AssetBundle "${
+          this.name
+        }" could not be loaded: "dependencies" have to be either a string or an array`
+      );
+    }
+    (dependencies as string[]).forEach(dep => {
+      const bundle = manager.getBundle(dep);
+      if (bundle) {
+        bundles.push(bundle);
+      }
+    });
+    return bundles;
   }
 }

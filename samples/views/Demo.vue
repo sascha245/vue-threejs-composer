@@ -24,26 +24,30 @@
       <three>
         <renderer :canvas="canvas" camera="main" :scene="activeScene" antialias shadows/>
 
-        <scene name="scene1" @load="startLoading" @load-progress="loadingProgress" @loaded="finishLoading">
-          <template slot="preload">
-            <div>
-              <texture name="crateTex" src="/assets/textures/crate.jpg"/>
-              <material name="cubeMat" :factory="cubeMaterialFactory"/>
+        <asset-bundle name="PolygonMini" preload>
+          <texture name="PolygonMini_Tex" src="/assets/textures/PolygonMinis_Texture_01.png"/>
 
-              <texture name="PolygonMini_Tex" src="/assets/textures/PolygonMinis_Texture_01.png"/>
-              <material name="PolygonMini_Mat" :factory="polygonMaterialFactory"/>
+          <material name="PolygonMini_Mat" :factory="polygonMaterialFactory"/>
 
-              <geometry name="cube" :factory="cubeFactory"/>
+          <model name="grassModel" src="/assets/models/SM_Env_Grass_01.fbx" materials="PolygonMini_Mat"/>
+          <model name="PM_column" src="/assets/models/SM_Tile_Hex_Column_02.fbx" materials="PolygonMini_Mat"/>
+          <model name="PM_flat" src="/assets/models/SM_Tile_Hex_Flat_01.fbx" materials="PolygonMini_Mat"/>
+        </asset-bundle>
 
-              <model name="grassModel" src="/assets/models/SM_Env_Grass_01.fbx" materials="PolygonMini_Mat"/>
-              <model name="PM_column" src="/assets/models/SM_Tile_Hex_Column_02.fbx" materials="PolygonMini_Mat"/>
-              <model name="PM_flat" src="/assets/models/SM_Tile_Hex_Flat_01.fbx" materials="PolygonMini_Mat"/>
-            </div>
+        <asset-bundle name="Crate" preload>
+          <texture name="crateTex" src="/assets/textures/crate.jpg"/>
+          <material name="cubeMat" :factory="cubeMaterialFactory"/>
+          <geometry name="cube" :factory="cubeFactory"/>
+        </asset-bundle>
 
-            <geometry name="plane" :factory="planeFactory"/>
-            <material name="waterMat" :factory="waterMaterialFactory"/>
+        <asset-bundle dependencies="Crate" name="Scene1" preload>
 
-          </template>
+          <geometry name="plane" :factory="planeFactory"/>
+          <material name="waterMat" :factory="waterMaterialFactory"/>
+
+        </asset-bundle>
+
+        <scene name="scene1" assets="PolygonMini, Scene1, Crate, Crate" @load="startLoading" @load-progress="loadingProgress" @loaded="finishLoading">
 
           <fog exp2/>
 
@@ -114,7 +118,7 @@
 
         </scene>
 
-        <scene name="scene2" @load="startLoading" @load-progress="loadingProgress" @loaded="finishLoading">
+        <scene name="scene2" assets="PolygonMini, Scene1, Crate, Crate" @load="startLoading" @load-progress="loadingProgress" @loaded="finishLoading">
           <!-- <template slot="preload">
             <material name="scene2_mat" :factory="materialFactory"/>
             <geometry name="scene2_field" :factory="geometryFactory"/>

@@ -1,12 +1,33 @@
 import {
     AssetType, AssetTypes, DisposableAsset, GeometryType, MaterialType, ModelType, TextureType
 } from "../types";
+import { Application } from "./Application";
+import { AssetBundle } from "./AssetBundle";
 
 export class AssetManager {
   private textures: Map<string, Promise<TextureType>> = new Map();
   private materials: Map<string, Promise<MaterialType>> = new Map();
   private geometries: Map<string, Promise<GeometryType>> = new Map();
   private models: Map<string, Promise<ModelType>> = new Map();
+
+  private _app: Application;
+  private _bundles: Map<string, AssetBundle> = new Map();
+
+  constructor(app: Application) {
+    this._app = app;
+  }
+
+  public createBundle(name: string) {
+    const bundle = new AssetBundle(this._app);
+    this._bundles.set(name, bundle);
+    return bundle;
+  }
+  public getBundle(name: string) {
+    return this._bundles.get(name);
+  }
+  public deleteBundle(name: string) {
+    this._bundles.delete(name);
+  }
 
   public add(name: string, type: AssetTypes, asset: Promise<AssetType>) {
     switch (type) {
@@ -54,17 +75,6 @@ export class AssetManager {
         break;
     }
   }
-
-  // public dispose() {
-  //   this.geometries.forEach(this.disposeAsset);
-  //   this.geometries.clear();
-
-  //   this.materials.forEach(this.disposeAsset);
-  //   this.materials.clear();
-
-  //   this.textures.forEach(this.disposeAsset);
-  //   this.textures.clear();
-  // }
 
   private disposeAsset(asset: Promise<AssetType>) {
     asset.then(value => {

@@ -16,7 +16,7 @@ export class Application {
   public readonly sceneManager = new SceneManager();
   public readonly cameraManager = new CameraManager();
   public readonly renderers = new RendererManager(this);
-  public readonly assets = new AssetManager();
+  public readonly assets = new AssetManager(this);
   public readonly inputs = new InputManager();
 
   private _disposed = false;

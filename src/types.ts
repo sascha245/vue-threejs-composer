@@ -27,6 +27,12 @@ export type TextureFactory = (app: Application) => Promise<TextureType>;
 export type LightFactory = (app: Application) => Promise<THREE.Light>;
 export type CameraFactory = (app: Application) => Promise<THREE.Camera>;
 
+export type OnProgressCallback = () => void;
+
+export interface OnLoadAssetBundleData {
+  promise: Promise<any>;
+}
+
 export interface DisposableAsset {
   dispose?: () => void;
 }

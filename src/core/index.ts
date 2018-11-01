@@ -1,6 +1,7 @@
 import * as Utils from "./Utils";
 
 export * from "./Application";
+export * from "./AssetBundle";
 export * from "./AssetManager";
 export * from "./SceneManager";
 export * from "./CameraManager";
