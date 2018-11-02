@@ -23,7 +23,7 @@ export class SceneManager {
   public remove(name: string) {
     if (this._scenes.has(name)) {
       this._scenes.delete(name);
-      this._hooks.emit("change", name, undefined);
+      this.emit("change", name, undefined);
     }
   }
 
@@ -41,7 +41,7 @@ export class SceneManager {
     const usages = this._uses.get(name) || 0;
     this._uses.set(name, usages + 1);
     if (!usages) {
-      this._hooks.emit("activate", name);
+      this.emit("activate", name);
     }
   }
   public unuse(name: string) {
@@ -51,9 +51,13 @@ export class SceneManager {
     }
     if (usages <= 1) {
       this._uses.delete(name);
-      this._hooks.emit("deactivate", name);
+      this.emit("deactivate", name);
       return;
     }
     this._uses.set(name, usages - 1);
+  }
+
+  private emit(type: SceneManagerHook, ...args: any[]) {
+    this._hooks.emit(type, ...args);
   }
 }

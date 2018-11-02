@@ -10,25 +10,21 @@ This library's strong points:
 
 1. Core features to easily register assets and create objects in your scenes.
 
-2. Asset manager to store your assets
+2. Asset bundles to efficiently (pre)load and unload your assets when you don't need them anymore
 
 3. Easily load 3D models and assign their materials
 
 4. If necessary, easily create even the most unique geometries, materials and textures with dedicated factory functions.
 
-5. Behaviours you can attach to objects, scenes or your application to move the world.
+**Note:** This library focuses on managing your THREE.js assets and objects more than all other aspects. As such, it won't include any basic geometries, materials. These optional features will however later be available in other packages.
 
-6. Inbuild input manager to handle inputs in a more forward way.
+### To be removed
 
-7. Scenes with asset preloading
+For now these features are still included in this package, but will later be moved in optional packages to let this package focus more on the core aspects.
 
-8. Easily add your own content! It is very easy to create your own components and wrappers on top of this library.
+- Behaviour components you can attach to objects, scenes or your application in which you can update whatever needed.
 
-**Todo:**
-
-- Add cube texture component
-- Add basic materials and geometries
-- Add basic meshes and lights
+- Inbuild input manager to handle inputs in a more straightforward way.
 
 ## Usage
 
@@ -64,61 +60,248 @@ If you want to test out our samples, you can clone our repository and launch our
 
 ```html
 <div>
-  <canvas ref="canvas" class="webglCanvas"></canvas>
+
+  <div>
+    <div class="screen">
+      <canvas ref="canvas" class="screen-canvas"></canvas>
+      <div class="screen-loading" v-if="isLoading">
+        <div>
+          <p>Loading...</p>
+          <p>{{loadingAmount}} / {{loadingTotal}}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div v-if="canvas">
-    <three :canvas="canvas" antialias>
+    <three>
+        <renderer :canvas="canvas" camera="main" :scene="activeScene" antialias shadows/>
 
-      <scene name="MyScene" active @load="loadingStarted" @load-progress="loadingProgress" @loaded="loadingFinished">
-        <template slot="preload">
+        <asset-bundle name="PolygonMini" preload>
+          <texture name="PolygonMini_Tex" src="/assets/textures/PolygonMinis_Texture_01.png"/>
 
-          <div>
-            <material name="cubeMat" :factory="cubeMaterialFactory"/>
-            <geometry name="cube" :factory="cubeFactory"/>
-          </div>
+          <material name="PolygonMini_Mat" :factory="polygonMaterialFactory"/>
 
-          <material name="waterMat" :factory="waterMaterialFactory"/>
+          <model name="grassModel" src="/assets/models/SM_Env_Grass_01.fbx" materials="PolygonMini_Mat"/>
+          <model name="PM_column" src="/assets/models/SM_Tile_Hex_Column_02.fbx" materials="PolygonMini_Mat"/>
+          <model name="PM_flat" src="/assets/models/SM_Tile_Hex_Flat_01.fbx" materials="PolygonMini_Mat"/>
+        </asset-bundle>
+
+        <asset-bundle name="Basics" preload>
+          <geometry name="cube" :factory="cubeFactory"/>
           <geometry name="plane" :factory="planeFactory"/>
-        </template>
+        </asset-bundle>
 
-        <fog exp2/>
-        <grid :size="10" :divisions="10"/>
-        <axes :size="1"/>
+        <asset-bundle name="Crate" dependencies="Basics" preload>
+          <texture name="crateTex" src="/assets/textures/crate.jpg"/>
+          <material name="cubeMat" :factory="cubeMaterialFactory"/>
+        </asset-bundle>
 
-        <camera name="mainCamera" :factory="cameraFactory">
-          <position :value="camera.position"/>
-          <rotation :value="camera.rotation" rad/>
-        </camera>
+        <asset-bundle name="Water" dependencies="Basics" preload>
+          <material name="waterMat" :factory="waterMaterialFactory"/>
+        </asset-bundle>
 
-        <light name="light" :factory="lightFactory">
-          <position :value="light.position"/>
-          <shadows cast/>
+        <scene name="scene1" assets="PolygonMini, Water, Crate" @load="startLoading" @load-progress="loadingProgress" @loaded="finishLoading">
 
-          <!-- See custom behaviour implementation below -->
-          <hover-behaviour :position="light.position" :distance="1" :speed="5">
-        </light>
+          <fog exp2/>
 
-        <mesh name="waterPlane" geometry="plane" material="waterMat">
-          <rotation :value="{ x: -90, y: 0, z: 0 }"/>
-          <shadows receive/>
-        </mesh>
+          <camera name="main" :factory="cameraFactory">
+            <position :value="scene1.camera.position"/>
+            <rotation :value="scene1.camera.rotation" rad/>
+          </camera>
 
-        <mesh v-for="field in scene1.fields"
-          :key="field.id"
-          :name="'field-'+field.id"
-          geometry="cube"
-          material="cubeMat"
-          >
-          <position :value="{ x: field.x * 2, y: 0, z: field.y * 2}"/>
-          <scale :value="{ x: 1.2, y: 0.7, z: 1.2}"/>
-          <shadows cast receive/>
-        </mesh>
+          <light name="sun" :factory="lightFactory">
+            <position :value="{x: -5, y: 10, z: -5}"/>
+            <shadows cast/>
+          </light>
 
-      </scene>
+          <grid>
+            <position :value="{ x: -10, y: 0.5, z: -10 }"/>
+          </grid>
+          <axes>
+            <position :value="{ x: -10, y: 0.5, z: -10 }"/>
+          </axes>
+
+          <group>
+            <position :value="{ x: 0, y: 0, z: 0 }"/>
+
+            <mesh name="waterPlane" geometry="plane" material="waterMat">
+              <rotation :value="{ x: -90, y: 0, z: 0 }"/>
+              <shadows receive/>
+            </mesh>
+
+            <mesh model="grassModel" name="grass">
+              <position :value="{ x: 10, y: 0, z: 10 }"/>
+              <scale :value="{ x: 0.05, y: 0.05, z: 0.05 }"/>
+              <shadows cast receive recursive/>
+            </mesh>
+
+            <mesh v-for="field in scene1.fields"
+              :key="field.id"
+              geometry="cube"
+              material="cubeMat"
+              >
+              <position :value="{ x: field.x * 2, y: field.y + 5, z: field.z * -2}"/>
+              <shadows cast receive/>
+
+              <hover-behaviour :position="field" :distance="5"/>
+            </mesh>
+          </group>
+
+        </scene>
 
     </three>
   </div>
 </div>
 ```
+
+Naturally, you would normally split this component into multiple smaller ones.
+Here what your component could look like on the script side:
+
+```ts
+import "../FbxLoader";
+
+import * as THREE from "three";
+import { Component, Vue } from "vue-property-decorator";
+
+import {
+    Application, AssetTypes, CameraFactory, components, GeometryFactory, LightFactory,
+    MaterialFactory
+} from "vue-threejs-composer";
+import { HoverBehaviour } from "./HoverBehaviour";
+
+@Component({
+  components: {
+    ...components,
+    HoverBehaviour
+  }
+})
+export default class About extends Vue {
+  public cubeFactory: GeometryFactory = async (app: Application) => {
+    return new THREE.BoxBufferGeometry(1, 1, 1);
+  };
+
+  public planeFactory: GeometryFactory = async (app: Application) => {
+    return new THREE.PlaneBufferGeometry(100, 100);
+  };
+
+  public cubeMaterialFactory: MaterialFactory = async (app: Application) => {
+    const texture = await app.assets.get("crateTex", AssetTypes.TEXTURE);
+
+    if (!texture) {
+      throw new Error("Could not find 'crateTex' texture");
+    }
+    const mat = new THREE.MeshPhysicalMaterial({
+      metalness: 0.01
+    });
+    mat.map = texture as THREE.Texture;
+    return mat;
+  };
+
+  public waterMaterialFactory: MaterialFactory = async (app: Application) => {
+    const mat = new THREE.MeshPhysicalMaterial({
+      color: "#9c9cff",
+      metalness: 0.01
+    });
+    return mat;
+  };
+
+  public polygonMaterialFactory: MaterialFactory = async (app: Application) => {
+    const texture = await app.assets.get("PolygonMini_Tex", AssetTypes.TEXTURE);
+
+    if (!texture) {
+      throw new Error("Could not find 'PolygonMini_Tex' texture");
+    }
+
+    const mat = new THREE.MeshStandardMaterial({
+      color: "#eeeeee",
+      metalness: 0.01
+    });
+    mat.map = texture as THREE.Texture;
+    return mat;
+  };
+
+  public lightFactory: LightFactory = async () => {
+    const light = new THREE.PointLight(0xffffff, 1, 100);
+
+    light.shadow.mapSize.width = 512; // default
+    light.shadow.mapSize.height = 512; // default
+    light.shadow.camera.near = 0.3; // default
+    light.shadow.camera.far = 500; // default
+
+    return light;
+  };
+
+  public cameraFactory: CameraFactory = async () => {
+    const viewAngle = 60;
+    const nearClipping = 0.1;
+    const farClipping = 1000;
+    return new THREE.PerspectiveCamera(
+      viewAngle,
+      window.innerWidth / window.innerHeight,
+      nearClipping,
+      farClipping
+    );
+  };
+
+  public canvas: HTMLCanvasElement | null = null;
+
+  public scene1 = {
+    camera: {
+      position: {
+        x: 0,
+        y: 10,
+        z: 0
+      },
+      rotation: {
+        x: 0,
+        y: 0,
+        z: 0
+      }
+    },
+    fields: new Array()
+  };
+
+  public isLoading = true;
+  public loadingAmount = 0;
+  public loadingTotal = 0;
+
+  public activeScene = this.scene1.name;
+
+  public startLoading() {
+    this.isLoading = true;
+  }
+  public finishLoading() {
+    this.isLoading = false;
+  }
+  public loadingProgress(amount: number, total: number) {
+    this.loadingAmount = amount;
+    this.loadingTotal = total;
+  }
+
+  public changeScene(name: string) {
+    this.activeScene = name;
+  }
+
+  public mounted() {
+    this.canvas = this.$refs.canvas as HTMLCanvasElement;
+    let idx = 0;
+    for (let x = 0; x < 5; ++x) {
+      for (let z = 0; z < 5; ++z) {
+        this.scene1.fields.push({
+          x,
+          z,
+          id: `field_${idx}`,
+          y: 0
+        });
+        ++idx;
+      }
+    }
+  }
+}
+
+```
+
 
 ### Define custom behaviours
 

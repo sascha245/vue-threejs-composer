@@ -39,6 +39,23 @@ export default class About extends Vue {
     mat.map = texture as THREE.Texture;
     return mat;
   };
+  public polygonDungeonFactory: MaterialFactory = async (app: Application) => {
+    const texture = await app.assets.get(
+      "PolygonDungeon_Tex",
+      AssetTypes.TEXTURE
+    );
+
+    if (!texture) {
+      throw new Error("Could not find 'PolygonDungeon_Tex' texture");
+    }
+
+    const mat = new THREE.MeshStandardMaterial({
+      color: "#eeeeee",
+      metalness: 0.01
+    });
+    mat.map = texture as THREE.Texture;
+    return mat;
+  };
 
   public lightFactory: LightFactory | null = null;
   public cameraFactory: CameraFactory | null = null;
@@ -98,6 +115,8 @@ export default class About extends Vue {
   }
 
   public created() {
+    console.log("scene", this.scene1);
+
     let idx = 0;
     for (let x = 0; x < 5; ++x) {
       for (let z = 0; z < 5; ++z) {
@@ -111,8 +130,10 @@ export default class About extends Vue {
       }
     }
 
-    this.cubeFactory = async () => {
+    this.cubeFactory = async (app: Application) => {
       // await new Promise(r => setTimeout(r, 2000));
+      // return new THREE.CylinderBufferGeometry(1, 1, 1, 6, 6);
+
       return new THREE.BoxBufferGeometry(1, 1, 1);
     };
     this.planeFactory = async () => {
