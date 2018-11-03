@@ -1,7 +1,7 @@
 import * as THREE from "three";
 import { Component, Mixins, Prop } from "vue-property-decorator";
 
-import { Behaviour } from "../../src";
+import { BehaviourComponent } from "../../src";
 import { OrbitControls } from "./OrbitControls";
 
 interface Vec3 {
@@ -11,7 +11,7 @@ interface Vec3 {
 }
 
 @Component
-export class MyBehaviour extends Mixins(Behaviour) {
+export class MyBehaviour extends Mixins(BehaviourComponent) {
   @Prop()
   public data!: {
     position: Vec3;

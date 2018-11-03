@@ -18,12 +18,15 @@ export interface ThreeLoaderInterface {
 }
 
 export class Loader {
-  private _extensions = new Map<string, ThreeLoaderConstructor>();
+  private static _extensions = new Map<string, ThreeLoaderConstructor>();
 
-  public registerExtension(extension: string, loader: ThreeLoaderConstructor) {
+  public static registerExtension(
+    extension: string,
+    loader: ThreeLoaderConstructor
+  ) {
     this._extensions.set(extension, loader);
   }
-  public unregisterExtension(extension: string) {
+  public static unregisterExtension(extension: string) {
     this._extensions.delete(extension);
   }
 
@@ -52,7 +55,7 @@ export class Loader {
 
   public load(src: string, name: string): Promise<AssetType> {
     const ext = this.getFileExtension(src);
-    const loaderClass = this._extensions.get(ext);
+    const loaderClass = Loader._extensions.get(ext);
     if (!loaderClass) {
       throw new Error(
         `Asset "${name}" could not be loaded: extension ${ext} is not registered`

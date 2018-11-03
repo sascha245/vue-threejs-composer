@@ -1,4 +1,5 @@
 import { AssetType } from "./AssetTypes";
+import { EventDispatcher } from "./EventDispatcher";
 import { Handle } from "./Handle";
 
 export class BundleHandle extends Handle {
@@ -85,6 +86,7 @@ export class BundleHandle extends Handle {
   }
 
   protected load() {
+    console.log("bundle load");
     this._registered = super.load();
     return this._registered
       .then(() => {
@@ -97,11 +99,12 @@ export class BundleHandle extends Handle {
   }
 
   protected unload() {
+    console.log("bundle unload");
     const p = super.unload();
     return p
       .then(() => {
         const deps = this._dependencies.map(dep => dep.unuse());
-        return Promise.all(deps) as Promise<any>;
+        return Promise.all(deps).then(() => Promise.resolve());
       })
       .then(() => {
         this._dependencies = [];
@@ -115,6 +118,12 @@ export class BundleHandle extends Handle {
     const total = allAssets.length;
     let count = 0;
 
+    console.log(
+      `bundle await all ${allAssets.length} assets from ${
+        this._dependencies.length
+      } bundles`
+    );
+
     const pAssets = allAssets.map(assets => {
       return assets.then(() => {
         ++count;
@@ -125,7 +134,7 @@ export class BundleHandle extends Handle {
       });
     });
 
-    return Promise.all(pAssets).then(Promise.resolve);
+    return Promise.all(pAssets).then(() => Promise.resolve());
   }
 
   private static recursiveCountAssets(

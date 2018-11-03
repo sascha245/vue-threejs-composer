@@ -1,5 +1,6 @@
 import { AssetManager } from "./AssetManager";
 import { CameraManager } from "./CameraManager";
+import { EventDispatcher } from "./EventDispatcher";
 import { Loader } from "./Loader";
 import { RendererManager } from "./RendererManager";
 import { SceneManager } from "./SceneManager";
@@ -34,6 +35,16 @@ export class Application {
     return this._assets;
   }
 
+  public get onBeforeUpdate() {
+    return this._onBeforeUpdate;
+  }
+  public get onUpdate() {
+    return this._onUpdate;
+  }
+  public get onAfterUpdate() {
+    return this._onAfterUpdate;
+  }
+
   public activate() {
     if (!this._animationFrame) {
       this._lastUpdate = Date.now();
@@ -47,6 +58,8 @@ export class Application {
       this._animationFrame = undefined;
     }
   }
+
+  public dispose() {}
 
   private update = () => {
     const now = Date.now();

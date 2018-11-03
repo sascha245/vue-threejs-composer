@@ -1,3 +1,5 @@
+import { EventDispatcher } from "./EventDispatcher";
+
 export class Handle {
   private _queue = Promise.resolve();
   private _usages = 0;
@@ -50,25 +52,25 @@ export class Handle {
   protected load(): Promise<void> {
     return this._queue.then(() => {
       const p = this._onLoad.listeners.map(fn => fn());
-      return Promise.all(p).then(Promise.resolve);
+      return Promise.all(p).then(() => Promise.resolve());
     });
   }
   private activate(): Promise<void> {
     return this._queue.then(() => {
       const p = this._onActivate.listeners.map(fn => fn());
-      return Promise.all(p).then(Promise.resolve);
+      return Promise.all(p).then(() => Promise.resolve());
     });
   }
   protected unload(): Promise<void> {
     return this._queue.then(() => {
       const p = this._onUnload.listeners.map(fn => fn());
-      return Promise.all(p).then(Promise.resolve);
+      return Promise.all(p).then(() => Promise.resolve());
     });
   }
   private deactivate(): Promise<void> {
     return this._queue.then(() => {
       const p = this._onDeactivate.listeners.map(fn => fn());
-      return Promise.all(p).then(Promise.resolve);
+      return Promise.all(p).then(() => Promise.resolve());
     });
   }
 }

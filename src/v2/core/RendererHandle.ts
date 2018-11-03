@@ -2,6 +2,7 @@ import { Renderer } from "three";
 
 import { Application } from "./Application";
 import { CameraHandle } from "./CameraHandle";
+import { EventDispatcher } from "./EventDispatcher";
 import { Handle } from "./Handle";
 import { SceneHandle } from "./SceneHandle";
 
@@ -55,6 +56,7 @@ export class RendererHandle extends Handle {
   }
 
   public setScene(name?: string) {
+    console.log("set scene", name);
     if (this._sceneName !== name) {
       this._sceneName = name;
       const scene = name ? this._app.scenes.get(name) : undefined;
@@ -63,6 +65,7 @@ export class RendererHandle extends Handle {
     return this._changeQueue;
   }
   public setCamera(name?: string) {
+    console.log("set camera", name);
     if (this._cameraName !== name) {
       this._cameraName = name;
       const camera = name ? this._app.cameras.get(name) : undefined;
@@ -72,13 +75,15 @@ export class RendererHandle extends Handle {
   }
 
   protected load() {
+    console.log("load renderer");
     const p = super.load();
     this._app.scenes.watch(this.watchScenes);
     this._app.cameras.watch(this.watchCameras);
-    return p;
+    return p.then(() => this._changeQueue);
   }
 
   protected unload() {
+    console.log("unload renderer");
     const p = super.unload();
     this._app.scenes.unwatch(this.watchScenes);
     this._app.cameras.unwatch(this.watchCameras);
@@ -86,7 +91,8 @@ export class RendererHandle extends Handle {
   }
 
   private updateScene(scene?: SceneHandle): Promise<void> {
-    if (this._scene === scene) {
+    if (this._scene !== scene) {
+      console.log("update scene");
       this._changeQueue = this._changeQueue
         .then(() => {
           return this._scene ? this._scene.unuse() : Promise.resolve();
@@ -100,6 +106,7 @@ export class RendererHandle extends Handle {
   }
   private updateCamera(camera?: CameraHandle): Promise<void> {
     if (this._camera !== camera) {
+      console.log("update camera");
       this._changeQueue = this._changeQueue
         .then(() => {
           return this._camera ? this._camera.unuse() : Promise.resolve();

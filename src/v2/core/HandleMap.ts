@@ -1,4 +1,5 @@
 import { HandlerMapErrors } from "./Errors";
+import { EventDispatcher } from "./EventDispatcher";
 import { Handle } from "./Handle";
 
 export class HandleMap<T extends Handle> {
@@ -49,7 +50,9 @@ export class HandleMap<T extends Handle> {
     }
   }
 
-  protected disposeHook(handler: T) {}
+  protected disposeHook(handler: T) {
+    handler.dispose();
+  }
   protected factoryHook(): T {
     return new this._ctor();
   }

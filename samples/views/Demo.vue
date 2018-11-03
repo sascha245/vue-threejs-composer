@@ -4,8 +4,8 @@
   <div class="about">
     <h1>This is an about page</h1>
     <div>
-      <button @click="changeScene(scene1)">Scene 1</button>
-      <button @click="changeScene(scene2)">Scene 2</button>
+      <button @click="changeScene('scene1')">Scene 1</button>
+      <button @click="changeScene('scene2')">Scene 2</button>
     </div>
 
     <div>
@@ -27,7 +27,7 @@
         <asset-bundle name="PolygonMini" preload>
           <texture name="PolygonMini_Tex" src="/assets/textures/PolygonMinis_Texture_01.png"/>
 
-          <material name="PolygonMini_Mat" :factory="polygonMaterialFactory"/>
+          <standard-material name="PolygonMini_Mat" map="PolygonMini_Tex"/>
 
           <model name="grassModel" src="/assets/models/SM_Env_Grass_01.fbx" materials="PolygonMini_Mat"/>
           <model name="PM_column" src="/assets/models/SM_Tile_Hex_Column_02.fbx" materials="PolygonMini_Mat"/>
@@ -37,23 +37,25 @@
         <asset-bundle name="PolygonDungeon" preload>
           <texture name="PolygonDungeon_Tex" src="/assets/textures/Dungeons_Texture_01.png"/>
 
-          <material name="PolygonDungeon_Mat" :factory="polygonDungeonFactory"/>
+          <standard-material name="PolygonDungeon_Mat" map="PolygonDungeon_Tex"/>
 
           <model name="PD_dandelion1" src="/assets/models/SM_Env_Tree_Dandelion_01.fbx" materials="PolygonDungeon_Mat"/>
           <model name="PD_dandelion2" src="/assets/models/SM_Env_Tree_Dandelion_02.fbx" materials="PolygonDungeon_Mat"/>
           <model name="PD_dandelion3" src="/assets/models/SM_Env_Tree_Dandelion_03.fbx" materials="PolygonDungeon_Mat"/>
         </asset-bundle>
 
+
+
         <asset-bundle name="Crate" preload>
           <texture name="crateTex" src="/assets/textures/crate.jpg"/>
-          <material name="cubeMat" :factory="cubeMaterialFactory"/>
+          <standard-material name="cubeMat" map="crateTex"/>
           <geometry name="cube" :factory="cubeFactory"/>
         </asset-bundle>
 
         <asset-bundle dependencies="Crate" name="Scene1" preload>
 
           <geometry name="plane" :factory="planeFactory"/>
-          <material name="waterMat" :factory="waterMaterialFactory"/>
+          <standard-material name="waterMat" color="#9c9cff"/>
 
         </asset-bundle>
 
@@ -97,25 +99,25 @@
             <mesh model="grassModel" name="grass">
               <position :value="{ x: 10, y: 3, z: 10 }"/>
               <scale :value="{ x: 0.05, y: 0.05, z: 0.05 }"/>
-              <shadows cast receive recursive/>
+              <shadows cast receive deep/>
             </mesh>
 
             <mesh model="PD_dandelion1">
               <position :value="{ x: -10, y: 3, z: 10 }"/>
               <!-- <scale :value="{ x: 0.05, y: 0.05, z: 0.05 }"/> -->
-              <shadows cast receive recursive/>
+              <shadows cast receive deep/>
             </mesh>
 
             <group>
               <position :value="{ x: 10, y: 3, z: 10 }"/>
               <scale :value="{ x: 0.01, y: 0.01, z: 0.01 }"/>
-              <shadows cast receive recursive/>
+              <shadows cast receive/>
 
               <mesh model="PM_column" name="column">
-                <shadows cast receive recursive/>
+                <shadows cast receive deep/>
               </mesh>
               <mesh model="PM_flat" name="flat_grass">
-                <shadows cast receive recursive/>
+                <shadows cast receive deep/>
               </mesh>
             </group>
 

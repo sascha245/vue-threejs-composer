@@ -1,4 +1,4 @@
-class EventDispatcher<Func extends Function> {
+export class EventDispatcher<Func extends Function> {
   private _listeners: Func[] = [];
 
   public get listeners() {

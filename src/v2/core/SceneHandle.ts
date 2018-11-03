@@ -8,6 +8,10 @@ export class SceneHandle extends Handle {
 
   private _scene?: Scene;
 
+  public get onLoadProgress() {
+    return this._bundle.onLoadProgress;
+  }
+
   public set(scene?: Scene) {
     this._scene = scene;
   }
@@ -23,6 +27,7 @@ export class SceneHandle extends Handle {
   }
 
   protected load() {
+    console.log("load scene");
     const p = super.load();
     return p.then(() => {
       return this._bundle.use();
@@ -30,6 +35,7 @@ export class SceneHandle extends Handle {
   }
 
   protected unload() {
+    console.log("unload scene");
     const p = super.load();
     return p.then(() => {
       return this._bundle.unuse();
