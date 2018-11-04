@@ -14,12 +14,14 @@ export class Texture extends Mixins(AssetComponent) {
   @Prop({ type: String })
   public src?: string;
 
+  private m_texture!: Promise<TextureType>;
+
   public created() {
     const app = this.app();
     if (this.factory) {
-      this.asset = this.factory(app);
+      this.m_texture = this.factory(app);
     } else if (this.src) {
-      this.asset = app.loader.texture(this.src, this.name);
+      this.m_texture = app.loader.texture(this.src, this.name);
     } else {
       throw new Error(
         `Texture "${
@@ -27,11 +29,20 @@ export class Texture extends Mixins(AssetComponent) {
         }" could not be loaded: no "src" or "factory" props given`
       );
     }
-    app.assets.textures.set(this.name, this.asset as Promise<TextureType>);
+
+    if (this.bundle()) {
+      this.bundle()!.registerAsset(this.name, this.m_texture);
+    }
+    app.assets.textures.set(this.name, this.m_texture);
+    console.log("texture created", this.name);
   }
 
   public async beforeDestroy() {
+    if (this.bundle()) {
+      this.bundle()!.unregisterAsset(this.name);
+    }
     this.app().assets.textures.dispose(this.name);
+    console.log("texture disposed", this.name);
   }
 
   public render(h: any) {

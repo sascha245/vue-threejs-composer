@@ -11,4 +11,15 @@ export class CameraHandle extends Handle {
   public get() {
     return this._camera;
   }
+
+  protected load() {
+    console.log("load camera");
+    return super.load();
+  }
+
+  protected deactivate() {
+    return super.deactivate().then(() => {
+      console.log("deactivate camera");
+    });
+  }
 }

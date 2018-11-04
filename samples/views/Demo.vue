@@ -47,9 +47,11 @@
 
 
         <asset-bundle name="Crate" preload>
-          <texture name="crateTex" src="/assets/textures/crate.jpg"/>
-          <standard-material name="cubeMat" map="crateTex"/>
-          <geometry name="cube" :factory="cubeFactory"/>
+          <div>
+            <texture name="crateTex" src="/assets/textures/crate.jpg"/>
+            <standard-material name="cubeMat" map="crateTex"/>
+            <geometry name="cube" :factory="cubeFactory"/>
+          </div>
         </asset-bundle>
 
         <asset-bundle dependencies="Crate" name="Scene1" preload>

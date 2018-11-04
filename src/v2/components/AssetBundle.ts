@@ -1,8 +1,7 @@
-import Vue, { VNode } from "vue";
-import { Component, Mixins, Prop } from "vue-property-decorator";
+import { Component, Mixins, Prop, Provide, Vue } from "vue-property-decorator";
 
 import { BundleHandle } from "../core";
-import { AppComponent, isAssetComponent } from "../mixins";
+import { AppComponent } from "../mixins";
 import { stringToArray } from "../utils/toArray";
 
 @Component
@@ -15,6 +14,13 @@ export class AssetBundle extends Mixins(AppComponent) {
 
   @Prop({ type: [String, Array], default: () => [] })
   public dependencies!: string | string[];
+
+  @Provide("bundle")
+  private provideBundle = this.getBundle;
+
+  private getBundle() {
+    return this.m_bundle;
+  }
 
   private m_active = false;
   private m_bundle!: BundleHandle;
@@ -48,24 +54,20 @@ export class AssetBundle extends Mixins(AppComponent) {
     await Vue.nextTick();
     await deps;
 
-    this.registerAssets(this.$slots.default);
+    console.log("registered bundle", this.name, this.m_bundle.countAssets());
   }
 
   private async onUnload(): Promise<void> {
     this.m_active = false;
     await Vue.nextTick();
-  }
 
-  private registerAssets(nodes: VNode[] | undefined) {
-    if (nodes) {
-      for (const node of nodes) {
-        const component = node.componentInstance;
-        if (component && isAssetComponent(component)) {
-          this.m_bundle.registerAsset(component.asset);
-        }
-        this.registerAssets(node.children);
-      }
-    }
+    const assets = this.app().assets;
+    console.log(
+      assets.textures.size(),
+      assets.materials.size(),
+      assets.geometries.size(),
+      assets.models.size()
+    );
   }
 
   private getBundles(pDependencies: string | string[]): BundleHandle[] {

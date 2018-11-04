@@ -12,13 +12,17 @@ export class Geometry extends Mixins(AssetComponent) {
   public factory!: GeometryFactory;
 
   public async created() {
-    this.asset = this.factory(this.app());
-    this.app().assets.geometries.set(this.name, this.asset as Promise<
-      GeometryType
-    >);
+    const geometry = this.factory(this.app());
+    if (this.bundle()) {
+      this.bundle()!.registerAsset(this.name, geometry);
+    }
+    this.app().assets.geometries.set(this.name, geometry);
   }
 
   public async beforeDestroy() {
+    if (this.bundle()) {
+      this.bundle()!.unregisterAsset(this.name);
+    }
     this.app().assets.geometries.dispose(this.name);
   }
 

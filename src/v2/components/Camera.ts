@@ -1,8 +1,7 @@
-import { Component, Mixins, Prop, Provide } from "vue-property-decorator";
+import { Component, Mixins, Prop, Provide, Vue } from "vue-property-decorator";
 
 import { CameraFactory, CameraHandle } from "../core";
 import { ObjectComponent } from "../mixins";
-
 
 @Component
 export class Camera extends Mixins(ObjectComponent) {
@@ -27,6 +26,7 @@ export class Camera extends Mixins(ObjectComponent) {
   };
   public onDeactivate = async () => {
     this.m_active = false;
+    await Vue.nextTick();
   };
 
   public async created() {
@@ -41,10 +41,13 @@ export class Camera extends Mixins(ObjectComponent) {
     this.m_camera.onDeactivate.on(this.onDeactivate);
 
     this.m_active = true;
+
+    console.log("camera created", this.name);
   }
 
   public beforeDestroy() {
     this.app().cameras.dispose(this.name);
+    console.log("camera disposed", this.name);
   }
 
   public render(h: any) {

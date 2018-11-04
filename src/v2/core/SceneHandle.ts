@@ -34,10 +34,16 @@ export class SceneHandle extends Handle {
     });
   }
 
+  protected deactivate() {
+    return super.deactivate().then(() => {
+      console.log("deactivate scene");
+    });
+  }
+
   protected unload() {
-    console.log("unload scene");
     const p = super.load();
     return p.then(() => {
+      console.log("unload scene");
       return this._bundle.unuse();
     });
   }

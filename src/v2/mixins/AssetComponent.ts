@@ -1,13 +1,14 @@
-import { Component, Mixins, Vue } from "vue-property-decorator";
+import { Component, Inject, Mixins, Vue } from "vue-property-decorator";
 
-import { AssetType } from "../core";
+import { BundleHandle } from "../core";
 import { AppComponent } from "./AppComponent";
+
+export type BundleGetter = () => BundleHandle | undefined;
+
+const BundleDefaultGetter = () => undefined;
 
 @Component
 export class AssetComponent extends Mixins(AppComponent) {
-  public asset!: Promise<AssetType>;
-}
-
-export function isAssetComponent(component: Vue): component is AssetComponent {
-  return (component as any).asset instanceof Promise;
+  @Inject({ default: BundleDefaultGetter })
+  protected bundle!: BundleGetter;
 }

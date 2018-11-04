@@ -25,6 +25,7 @@ export class HandleMap<T extends Handle> {
   }
   public set(name: string, handler: T): void {
     if (this._data.has(name)) {
+      console.log("handler already exists in map", name);
       throw HandlerMapErrors.ALREADY_EXISTS;
     }
     this._data.set(name, handler);
@@ -36,7 +37,7 @@ export class HandleMap<T extends Handle> {
   public dispose(name?: string) {
     if (!name) {
       this._data.forEach((item, key) => {
-        this.emitChange(key, item);
+        this.emitChange(key, undefined);
         this.disposeHook(item);
       });
       this._data.clear();
@@ -45,8 +46,9 @@ export class HandleMap<T extends Handle> {
 
     const handler = this._data.get(name);
     if (handler) {
-      this.emitChange(name, handler);
+      this.emitChange(name, undefined);
       this.disposeHook(handler);
+      this._data.delete(name);
     }
   }
 

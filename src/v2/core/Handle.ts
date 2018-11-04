@@ -55,7 +55,7 @@ export class Handle {
       return Promise.all(p).then(() => Promise.resolve());
     });
   }
-  private activate(): Promise<void> {
+  protected activate(): Promise<void> {
     return this._queue.then(() => {
       const p = this._onActivate.listeners.map(fn => fn());
       return Promise.all(p).then(() => Promise.resolve());
@@ -67,7 +67,7 @@ export class Handle {
       return Promise.all(p).then(() => Promise.resolve());
     });
   }
-  private deactivate(): Promise<void> {
+  protected deactivate(): Promise<void> {
     return this._queue.then(() => {
       const p = this._onDeactivate.listeners.map(fn => fn());
       return Promise.all(p).then(() => Promise.resolve());

@@ -12,14 +12,20 @@ export class Material extends Mixins(AssetComponent) {
   private factory!: MaterialFactory;
 
   public created() {
-    this.asset = this.factory(this.app());
-    this.app().assets.materials.set(this.name, this.asset as Promise<
-      MaterialType
-    >);
+    const material = this.factory(this.app());
+    if (this.bundle()) {
+      this.bundle()!.registerAsset(this.name, material);
+    }
+    this.app().assets.materials.set(this.name, material);
+    console.log("material created", this.name);
   }
 
   public async beforeDestroy() {
+    if (this.bundle()) {
+      this.bundle()!.unregisterAsset(this.name);
+    }
     this.app().assets.materials.dispose(this.name);
+    console.log("material disposed", this.name);
   }
 
   public render(h: any) {

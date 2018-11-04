@@ -2,13 +2,20 @@ import { AssetType } from "./AssetTypes";
 import { EventDispatcher } from "./EventDispatcher";
 import { Handle } from "./Handle";
 
+interface AssetPair {
+  name: string;
+  value: Promise<AssetType>;
+}
+type AssetMap = Map<string, Promise<AssetType>>;
+type SearchAssetMap = Map<BundleHandle, AssetMap>;
+
 export class BundleHandle extends Handle {
-  private _assets: Array<Promise<AssetType>> = [];
+  private _assets: AssetMap = new Map();
   private _dependencies: BundleHandle[] = [];
   private _registered = this.queue;
 
   private _onLoadProgress = new EventDispatcher<
-    (amount: number, total: number) => Promise<void>
+    (amount: number, total: number, name: string) => Promise<void>
   >();
 
   public get onLoadProgress() {
@@ -19,8 +26,15 @@ export class BundleHandle extends Handle {
    * Register asset
    * @param bundles
    */
-  public registerAsset(pAsset: Promise<AssetType>) {
-    this._assets.push(pAsset);
+  public registerAsset(pName: string, pAsset: Promise<AssetType>) {
+    this._assets.set(pName, pAsset);
+  }
+  /**
+   * Unregister asset
+   * @param bundles
+   */
+  public unregisterAsset(pName: string) {
+    this._assets.delete(pName);
   }
 
   /**
@@ -69,14 +83,20 @@ export class BundleHandle extends Handle {
    * List of all assets across all given bundles and all their dependencies
    * @param bundles
    */
-  public static listAssets(bundles: BundleHandle[]): Array<Promise<AssetType>> {
-    const map = new Map<BundleHandle, Array<Promise<AssetType>>>();
+  public static listAssets(bundles: BundleHandle[]): AssetPair[] {
+    const map: SearchAssetMap = new Map();
     bundles.forEach(bundle => this.recursiveListAssets(map, bundle));
 
-    const arr: Array<Promise<AssetType>> = [];
-    const list = Array.from(map.values());
-    const assets = arr.concat(...list);
-    return assets;
+    const arr: AssetPair[] = [];
+    map.forEach(assetMap => {
+      assetMap.forEach((value, name) => {
+        arr.push({
+          name,
+          value
+        });
+      });
+    });
+    return arr;
   }
   /**
    * List of all assets across this bundle and all dependencies
@@ -108,7 +128,7 @@ export class BundleHandle extends Handle {
       })
       .then(() => {
         this._dependencies = [];
-        this._assets = [];
+        this._assets.clear();
         return Promise.resolve();
       });
   }
@@ -124,11 +144,11 @@ export class BundleHandle extends Handle {
       } bundles`
     );
 
-    const pAssets = allAssets.map(assets => {
-      return assets.then(() => {
+    const pAssets = allAssets.map(asset => {
+      return asset.value.then(() => {
         ++count;
         const progress = this._onLoadProgress.listeners.map(fn =>
-          fn(count, total)
+          fn(count, total, name)
         );
         return Promise.all(progress);
       });
@@ -142,7 +162,7 @@ export class BundleHandle extends Handle {
     pBundle: BundleHandle
   ) {
     if (!map.has(pBundle)) {
-      map.set(pBundle, pBundle._assets.length);
+      map.set(pBundle, pBundle._assets.size);
     }
     pBundle._dependencies.forEach(bundle => {
       this.recursiveCountAssets(map, bundle);
@@ -150,7 +170,7 @@ export class BundleHandle extends Handle {
   }
 
   private static recursiveListAssets(
-    map: Map<BundleHandle, Array<Promise<AssetType>>>,
+    map: SearchAssetMap,
     pBundle: BundleHandle
   ) {
     if (!map.has(pBundle)) {

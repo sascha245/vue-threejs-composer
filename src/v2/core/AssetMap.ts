@@ -1,4 +1,4 @@
-import { HandlerMapErrors } from "./Errors";
+import { AssetMapErrors, HandlerMapErrors } from "./Errors";
 
 interface DisposableAsset {
   dispose?: () => void;
@@ -7,9 +7,14 @@ interface DisposableAsset {
 export class AssetMap<T> {
   protected _data = new Map<string, Promise<T>>();
 
+  public size() {
+    return this._data.size;
+  }
+
   public set(name: string, asset: Promise<T>): void {
     if (this._data.has(name)) {
-      throw HandlerMapErrors.ALREADY_EXISTS;
+      console.log("asset already exists in map", name);
+      throw AssetMapErrors.ALREADY_EXISTS;
     }
     this._data.set(name, asset);
   }
@@ -25,9 +30,10 @@ export class AssetMap<T> {
       return;
     }
 
-    const handler = this._data.get(name);
-    if (handler) {
-      this.disposeHook(handler);
+    const asset = this._data.get(name);
+    if (asset) {
+      this.disposeHook(asset);
+      this._data.delete(name);
     }
   }
 

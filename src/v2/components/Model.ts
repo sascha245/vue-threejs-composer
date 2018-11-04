@@ -18,9 +18,10 @@ export class Model extends Mixins(AssetComponent) {
   @Prop({ type: [String, Array], default: () => [] })
   public materials!: string | string[];
 
+  private m_model!: Promise<ModelType>;
+
   public async created() {
     const app = this.app();
-
     if (!this.factory && !this.src) {
       throw new Error(
         `Model "${
@@ -30,17 +31,25 @@ export class Model extends Mixins(AssetComponent) {
     }
 
     if (this.src) {
-      this.asset = app.loader.load(this.src, this.name);
+      this.m_model = app.loader.load(this.src, this.name) as Promise<ModelType>;
     } else {
-      this.asset = this.factory(app);
+      this.m_model = this.factory(app);
     }
     this.overrideMaterials();
 
-    app.assets.models.set(this.name, this.asset as Promise<ModelType>);
+    if (this.bundle()) {
+      this.bundle()!.registerAsset(this.name, this.m_model);
+    }
+    app.assets.models.set(this.name, this.m_model);
+    console.log("model created", this.name);
   }
 
   public async beforeDestroy() {
+    if (this.bundle()) {
+      this.bundle()!.unregisterAsset(this.name);
+    }
     this.app().assets.models.dispose(this.name);
+    console.log("model disposed", this.name);
   }
 
   public render(h: any) {
@@ -50,7 +59,7 @@ export class Model extends Mixins(AssetComponent) {
   private overrideMaterials() {
     const materials = this.getMaterialPromises(this.materials);
     if (materials) {
-      this.asset = this.asset.then(async asset => {
+      this.m_model = this.m_model.then(async asset => {
         const mats = await Promise.all(materials);
         const model = asset as ModelType;
 

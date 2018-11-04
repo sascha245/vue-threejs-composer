@@ -23,21 +23,34 @@ export default class StandardMaterial extends Vue {
   @Prop({ type: Number, default: 0.01 })
   public metalness!: number;
 
-  public factory: MaterialFactory | null = null;
+  public async factory(app: Application) {
+    let texture;
+    if (this.map) {
+      texture = await app.assets.textures.get(this.map);
+    }
+
+    const mat = new MeshStandardMaterial({
+      color: this.color,
+      metalness: this.metalness
+    });
+    mat.map = texture as Texture;
+    return mat;
+  }
 
   public created() {
-    this.factory = async (app: Application) => {
-      let texture;
-      if (this.map) {
-        texture = await app.assets.textures.get(this.map);
-      }
-
-      const mat = new MeshStandardMaterial({
-        color: this.color,
-        metalness: this.metalness
-      });
-      mat.map = texture as Texture;
-      return mat;
-    };
+    console.log("standard material created", this.name);
+    // this.factory = async (app: Application) => {
+    //   let texture;
+    //   if (this.map) {
+    //     texture = await app.assets.textures.get(this.map);
+    //   }
+    //   const mat = new MeshStandardMaterial({
+    //     color: this.color,
+    //     metalness: this.metalness
+    //   });
+    //   mat.map = texture as Texture;
+    //   console.log("standard material created");
+    //   return mat;
+    // };
   }
 }
