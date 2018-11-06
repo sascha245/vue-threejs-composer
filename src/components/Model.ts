@@ -1,11 +1,11 @@
 import { Component, Mixins, Prop } from "vue-property-decorator";
 
-import { Utils } from "../core";
-import { AssetType, AssetTypes, MaterialType, ModelFactory, ModelType } from "../types";
-import { ThreeAssetComponent, ThreeComponent } from "./base";
+import { AssetType, MaterialType, ModelFactory, ModelType } from "../core";
+import { AssetComponent } from "../mixins";
+import { stringToArray } from "../utils/toArray";
 
 @Component
-export class Model extends Mixins(ThreeComponent, ThreeAssetComponent) {
+export class Model extends Mixins(AssetComponent) {
   @Prop({ required: true, type: String })
   public name!: string;
 
@@ -18,7 +18,10 @@ export class Model extends Mixins(ThreeComponent, ThreeAssetComponent) {
   @Prop({ type: [String, Array], default: () => [] })
   public materials!: string | string[];
 
+  private m_model!: Promise<ModelType>;
+
   public async created() {
+    const app = this.app();
     if (!this.factory && !this.src) {
       throw new Error(
         `Model "${
@@ -28,17 +31,23 @@ export class Model extends Mixins(ThreeComponent, ThreeAssetComponent) {
     }
 
     if (this.src) {
-      this.asset = Utils.loadModel(this.src, this.name);
+      this.m_model = app.loader.load(this.src, this.name) as Promise<ModelType>;
     } else {
-      this.asset = this.factory(this.app());
+      this.m_model = this.factory(app);
     }
     this.overrideMaterials();
 
-    this.app().assets.add(this.name, AssetTypes.MODEL, this.asset);
+    if (this.bundle()) {
+      this.bundle()!.registerAsset(this.name, this.m_model);
+    }
+    app.assets.models.set(this.name, this.m_model);
   }
 
-  public async beforeDestroy() {
-    this.app().assets.remove(this.name, AssetTypes.MODEL);
+  public async destroyed() {
+    if (this.bundle()) {
+      this.bundle()!.unregisterAsset(this.name);
+    }
+    this.app().assets.models.dispose(this.name);
   }
 
   public render(h: any) {
@@ -48,7 +57,7 @@ export class Model extends Mixins(ThreeComponent, ThreeAssetComponent) {
   private overrideMaterials() {
     const materials = this.getMaterialPromises(this.materials);
     if (materials) {
-      this.asset = this.asset.then(async asset => {
+      this.m_model = this.m_model.then(async asset => {
         const mats = await Promise.all(materials);
         const model = asset as ModelType;
 
@@ -63,24 +72,13 @@ export class Model extends Mixins(ThreeComponent, ThreeAssetComponent) {
     }
   }
 
-  private getMaterialPromises(materials: string | string[]) {
+  private getMaterialPromises(pMaterials: string | string[]) {
     const promises: Array<Promise<AssetType>> = [];
+    const materials = stringToArray(",", pMaterials);
+    const app = this.app();
 
-    if (!materials) {
-      return promises;
-    }
-    if (typeof materials === "string") {
-      materials = materials.split(",").map(mat => mat.trim());
-    }
-    if (!Array.isArray(materials)) {
-      throw new Error(
-        `Model "${
-          this.name
-        }" could not be loaded: "materials" have to be either a string or an array`
-      );
-    }
-    (materials as string[]).forEach(materialName => {
-      const prom = this.app().assets.get(materialName, AssetTypes.MATERIAL);
+    materials.forEach(materialName => {
+      const prom = app.assets.materials.get(materialName);
       if (prom) {
         promises.push(prom);
       }

@@ -1,15 +1,13 @@
-import * as THREE from "three";
-import { __await } from "tslib";
-import { VNode } from "vue";
-import { Component, Mixins, Prop, Provide, Vue, Watch } from "vue-property-decorator";
+import { Scene as ThreeScene } from "three";
+import { Component, Mixins, Prop, Provide, Vue } from "vue-property-decorator";
 
-import { AssetBundle } from "../core";
-import { AssetType, OnLoadAssetBundleData } from "../types";
-import { isThreeAssetComponent, ThreeComponent } from "./base";
+import { BundleHandle, SceneHandle } from "../core";
+import { AppComponent } from "../mixins";
+import { stringToArray } from "../utils/toArray";
 
 @Component
-export class Scene extends Mixins(ThreeComponent) {
-  @Prop({ type: String, default: "" })
+export class Scene extends Mixins(AppComponent) {
+  @Prop({ type: String, required: true })
   public name!: string;
 
   @Prop({ type: [String, Array], default: () => [] })
@@ -22,135 +20,55 @@ export class Scene extends Mixins(ThreeComponent) {
     return this.m_scene;
   }
 
-  private m_isActive = false;
-  private m_isReady = false;
-  private m_scene?: THREE.Scene;
-  private m_bundle!: AssetBundle;
+  private m_active = false;
+  private m_scene!: SceneHandle;
 
-  @Watch("name")
-  private watchName() {
-    if (this.m_scene) {
-      this.onDeactivate();
-    }
-    const isActive = this.app().sceneManager.isUsed(this.name);
-    if (isActive) {
-      this.onActivate();
-    }
+  public async onLoad() {
+    this.$emit("load");
+    await this.m_scene.registerDependencies(this.bundles());
   }
-
-  public async onDeactivate() {
-    // deactive children
-    this.m_isReady = false;
-
-    // console.log("scene bundle unuse");
-
-    await this.m_bundle.unuse();
-
-    // console.log("scene bundle unloaded!");
-
-    await Vue.nextTick();
-
-    if (this.m_scene) {
-      this.app().sceneManager.remove(this.m_scene.name);
-    }
-
-    this.m_isActive = false;
-    this.m_scene = undefined;
+  public async onLoadProgress(amount: number, total: number) {
+    this.$emit("load-progress", amount, total);
   }
-
   public async onActivate() {
-    this.m_scene = new THREE.Scene();
-    this.m_scene.name = this.name;
-
-    // tell the component to render the component (see render)
-    this.m_isActive = true;
-
+    const scene = new ThreeScene();
+    scene.name = this.name;
+    this.m_scene.set(scene);
+    this.m_active = true;
     await Vue.nextTick();
-
-    // now preload
-    await this.preloadAssets();
-
-    this.app().sceneManager.set(this.name, this.m_scene);
-    this.m_isReady = true;
+    this.$emit("loaded");
+  }
+  public async onUnload() {
+    this.m_active = false;
+    await Vue.nextTick();
+    this.m_scene.set(undefined);
   }
 
   public mounted() {
-    this.m_bundle = new AssetBundle();
-    this.m_bundle.on("load", async () => {
-      const bundles = this.getBundles(this.assets);
-      // console.log("scene load bundles", bundles);
-      await this.m_bundle.registerDependencies(bundles);
-    });
-    this.m_bundle.on("progress", (amount: number, total: number) => {
-      // console.log("scene on progress", amount, total);
-      this.$emit("load-progress", amount, total);
-    });
-
-    const manager = this.app().sceneManager;
-    manager.on("activate", this.onSceneActivate);
-    manager.on("deactivate", this.onSceneDeactivate);
-    this.watchName();
+    this.m_scene = this.app().scenes.create(this.name);
+    this.m_scene.onLoad.on(this.onLoad);
+    this.m_scene.onActivate.on(this.onActivate);
+    this.m_scene.onUnload.on(this.onUnload);
+    this.m_scene.onLoadProgress.on(this.onLoadProgress);
   }
 
-  public beforeDestroy() {
-    this.m_bundle.unuse();
-
-    const manager = this.app().sceneManager;
-    manager.off("activate", this.onSceneActivate);
-    manager.off("deactivate", this.onSceneDeactivate);
-    this.onDeactivate();
+  public destroyed() {
+    this.app().scenes.dispose(this.name);
   }
 
   public render(h: any) {
-    if (!this.m_isActive || !this.m_isReady) {
+    if (!this.m_active) {
       return null;
     }
     return h("div", this.$slots.default);
   }
 
-  private async preloadAssets() {
-    this.$emit("load");
-
-    await this.m_bundle.use();
-    // console.log("all bundles registrated");
-    await this.m_bundle.isReady();
-
-    // console.log("loaded!");
-    this.$emit("loaded");
-  }
-
-  private onSceneActivate = (sceneName: string) => {
-    if (sceneName !== this.name) {
-      return;
-    }
-    this.onActivate();
-  };
-  private onSceneDeactivate = (sceneName: string) => {
-    if (sceneName !== this.name) {
-      return;
-    }
-    this.onDeactivate();
-  };
-
-  private getBundles(dependencies: string | string[]): AssetBundle[] {
-    const manager = this.app().assets;
-    const bundles: AssetBundle[] = [];
-
-    if (!dependencies) {
-      return bundles;
-    }
-    if (typeof dependencies === "string") {
-      dependencies = dependencies.split(",").map(mat => mat.trim());
-    }
-    if (!Array.isArray(dependencies)) {
-      throw new Error(
-        `AssetBundle "${
-          this.name
-        }" could not be loaded: "dependencies" have to be either a string or an array`
-      );
-    }
-    (dependencies as string[]).forEach(dep => {
-      const bundle = manager.getBundle(dep);
+  public bundles() {
+    const bundles: BundleHandle[] = [];
+    const app = this.app();
+    const dependencies = stringToArray(",", this.assets);
+    dependencies.forEach(dep => {
+      const bundle = app.assets.bundles.get(dep);
       if (bundle) {
         bundles.push(bundle);
       }

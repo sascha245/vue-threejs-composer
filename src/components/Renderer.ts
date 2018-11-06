@@ -1,14 +1,12 @@
-import * as THREE from "three";
+import { PCFSoftShadowMap, WebGLRenderer } from "three";
 import { CreateElement } from "vue";
 import { Component, Mixins, Prop, Watch } from "vue-property-decorator";
 
-import { Application, RendererHandler } from "../core";
-import { ThreeComponent } from "./base";
+import { RendererHandle } from "../core";
+import { AppComponent } from "../mixins";
 
 @Component
-export class Renderer extends Mixins(ThreeComponent) {
-  private isReady = false;
-
+export class Renderer extends Mixins(AppComponent) {
   @Prop({ required: true, type: HTMLCanvasElement })
   public canvas!: HTMLCanvasElement;
 
@@ -32,40 +30,72 @@ export class Renderer extends Mixins(ThreeComponent) {
 
   @Watch("camera")
   private watchCamera() {
-    this._handler.setCameraName(this.camera);
+    this.m_renderer.setCamera(this.camera);
   }
   @Watch("scene")
   private watchScene() {
-    this._handler.setSceneName(this.scene);
+    this.m_renderer.setScene(this.scene);
   }
 
-  private _handler!: RendererHandler;
+  private m_ready = false;
+  private m_renderer!: RendererHandle;
+  private m_name!: string;
+  private static id = 0;
 
   public async created() {
-    this._handler = this.app().renderers.create({
+    const renderer = new WebGLRenderer({
       antialias: this.antialias,
       canvas: this.canvas,
       clearColor: this.clearColor,
       stencil: this.stencil
     });
+
+    Renderer.id++;
+    this.m_name = "" + Renderer.id;
+
+    this.m_renderer = this.app().renderers.create(this.m_name);
+    this.m_renderer.set(renderer);
+    this.m_renderer.render = () => {
+      renderer.clearColor();
+      const scene = this.m_renderer.scene
+        ? this.m_renderer.scene.get()
+        : undefined;
+      const camera = this.m_renderer.camera
+        ? this.m_renderer.camera.get()
+        : undefined;
+      if (scene && camera) {
+        renderer.render(scene, camera);
+      }
+    };
+    this.m_renderer.use();
+
     this.watchCamera();
     this.watchScene();
 
-    const renderer = this._handler.renderer;
+    window.addEventListener("resize", this.handleResize);
+    this.handleResize();
+
     if (this.shadows) {
       renderer.shadowMap.enabled = true;
-      renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-      // renderer.shadowMap.type = THREE.PCFShadowMap; // default THREE.PCFShadowMap
+      renderer.shadowMap.type = PCFSoftShadowMap;
     }
-    this.isReady = true;
+    this.m_ready = true;
   }
 
-  public beforeDestroy() {
-    this.app().renderers.dispose(this._handler);
+  private handleResize() {
+    const renderer = this.m_renderer.get()!;
+    const width = renderer.domElement.scrollWidth;
+    const height = renderer.domElement.scrollHeight;
+    renderer.setSize(width, height);
+  }
+
+  public destroyed() {
+    window.removeEventListener("resize", this.handleResize);
+    this.app().renderers.dispose(this.m_name);
   }
 
   public render(h: CreateElement) {
-    if (!this.isReady) {
+    if (!this.m_ready) {
       return null;
     }
     return h();

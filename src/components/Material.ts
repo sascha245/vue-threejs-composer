@@ -1,10 +1,10 @@
 import { Component, Mixins, Prop } from "vue-property-decorator";
 
-import { AssetTypes, MaterialFactory, MaterialType } from "../types";
-import { ThreeAssetComponent, ThreeComponent } from "./base";
+import { MaterialFactory, MaterialType } from "../core";
+import { AssetComponent } from "../mixins";
 
 @Component
-export class Material extends Mixins(ThreeComponent, ThreeAssetComponent) {
+export class Material extends Mixins(AssetComponent) {
   @Prop({ required: true, type: String })
   private name!: string;
 
@@ -12,12 +12,18 @@ export class Material extends Mixins(ThreeComponent, ThreeAssetComponent) {
   private factory!: MaterialFactory;
 
   public created() {
-    this.asset = this.factory(this.app());
-    this.app().assets.add(this.name, AssetTypes.MATERIAL, this.asset);
+    const material = this.factory(this.app());
+    if (this.bundle()) {
+      this.bundle()!.registerAsset(this.name, material);
+    }
+    this.app().assets.materials.set(this.name, material);
   }
 
-  public async beforeDestroy() {
-    this.app().assets.remove(this.name, AssetTypes.MATERIAL);
+  public async destroyed() {
+    if (this.bundle()) {
+      this.bundle()!.unregisterAsset(this.name);
+    }
+    this.app().assets.materials.dispose(this.name);
   }
 
   public render(h: any) {

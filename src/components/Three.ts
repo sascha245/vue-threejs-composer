@@ -5,32 +5,29 @@ import { Application } from "../core";
 
 @Component
 export class Three extends Vue {
-  private isReady = false;
-
   @Prop({ default: true, type: Boolean })
   public active!: boolean;
 
   @Provide("app")
   public provideApp = this.getApp;
 
-  private _app!: Application;
-  private _animationFrame?: number;
-  private _lastUpdate?: number;
+  private m_ready = false;
+  private m_app!: Application;
 
   public getApp() {
-    return this._app;
+    return this.m_app;
   }
 
-  public created() {
-    this._app = new Application();
+  public mounted() {
+    this.m_app = new Application();
     this.onChangeActive();
-    this.isReady = true;
+    this.m_ready = true;
   }
 
-  public beforeDestroy() {
+  public destroyed() {
     this.onDeactivate();
-    if (this._app) {
-      this._app.dispose();
+    if (this.m_app) {
+      this.m_app.dispose();
     }
   }
 
@@ -44,28 +41,14 @@ export class Three extends Vue {
   }
 
   public onDeactivate() {
-    if (this._animationFrame) {
-      cancelAnimationFrame(this._animationFrame);
-      this._animationFrame = undefined;
-    }
+    this.m_app.deactivate();
   }
   public onActivate() {
-    if (!this._animationFrame) {
-      this._lastUpdate = Date.now();
-      this.onUpdate();
-    }
-  }
-
-  public onUpdate() {
-    const now = Date.now();
-    const deltaTime = (now - this._lastUpdate!) * 0.001;
-    this._animationFrame = requestAnimationFrame(this.onUpdate);
-    this._app.update(deltaTime);
-    this._lastUpdate = now;
+    this.m_app.activate();
   }
 
   public render(h: CreateElement) {
-    if (!this.isReady) {
+    if (!this.m_ready) {
       return null;
     }
     return h("div", this.$slots.default);

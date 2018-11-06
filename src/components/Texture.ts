@@ -1,11 +1,10 @@
 import { Component, Mixins, Prop } from "vue-property-decorator";
 
-import { Utils } from "../core";
-import { AssetTypes, TextureFactory } from "../types";
-import { ThreeAssetComponent, ThreeComponent } from "./base";
+import { TextureFactory, TextureType } from "../core";
+import { AssetComponent } from "../mixins";
 
 @Component
-export class Texture extends Mixins(ThreeComponent, ThreeAssetComponent) {
+export class Texture extends Mixins(AssetComponent) {
   @Prop({ required: true, type: String })
   private name!: string;
 
@@ -15,11 +14,14 @@ export class Texture extends Mixins(ThreeComponent, ThreeAssetComponent) {
   @Prop({ type: String })
   public src?: string;
 
+  private m_texture!: Promise<TextureType>;
+
   public created() {
+    const app = this.app();
     if (this.factory) {
-      this.asset = this.factory(this.app());
+      this.m_texture = this.factory(app);
     } else if (this.src) {
-      this.asset = Utils.loadTexture(this.src, this.name);
+      this.m_texture = app.loader.texture(this.src, this.name);
     } else {
       throw new Error(
         `Texture "${
@@ -27,11 +29,18 @@ export class Texture extends Mixins(ThreeComponent, ThreeAssetComponent) {
         }" could not be loaded: no "src" or "factory" props given`
       );
     }
-    this.app().assets.add(this.name, AssetTypes.TEXTURE, this.asset);
+
+    if (this.bundle()) {
+      this.bundle()!.registerAsset(this.name, this.m_texture);
+    }
+    app.assets.textures.set(this.name, this.m_texture);
   }
 
-  public async beforeDestroy() {
-    this.app().assets.remove(this.name, AssetTypes.TEXTURE);
+  public async destroyed() {
+    if (this.bundle()) {
+      this.bundle()!.unregisterAsset(this.name);
+    }
+    this.app().assets.textures.dispose(this.name);
   }
 
   public render(h: any) {

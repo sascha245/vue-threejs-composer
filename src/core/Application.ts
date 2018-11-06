@@ -1,56 +1,71 @@
-import { EventEmitter } from "events";
-
-import { AssetManager } from "../core/AssetManager";
-import { CameraManager } from "../core/CameraManager";
-import { InputManager } from "../core/InputManager";
-import { SceneManager } from "../core/SceneManager";
+import { AssetManager } from "./AssetManager";
+import { EventDispatcher } from "./EventDispatcher";
+import { Loader } from "./Loader";
 import { RendererManager } from "./RendererManager";
-
-export type ApplicationHook =
-  | "update"
-  | "beforeRender"
-  | "afterRender"
-  | "ready";
+import { SceneManager } from "./SceneManager";
 
 export class Application {
-  public readonly sceneManager = new SceneManager();
-  public readonly cameraManager = new CameraManager();
-  public readonly renderers = new RendererManager(this);
-  public readonly assets = new AssetManager(this);
-  public readonly inputs = new InputManager();
+  private _scenes = new SceneManager();
+  private _renderers = new RendererManager(this);
+  private _assets = new AssetManager(this);
+  private _loader = new Loader();
 
-  private _disposed = false;
-  public get isDisposed() {
-    return this._disposed;
+  private _lastUpdate = 0;
+  private _animationFrame?: number;
+
+  private _onBeforeUpdate = new EventDispatcher<() => void>();
+  private _onUpdate = new EventDispatcher<(dt: number) => void>();
+  private _onAfterUpdate = new EventDispatcher<() => void>();
+
+  public get loader() {
+    return this._loader;
+  }
+  public get scenes() {
+    return this._scenes;
+  }
+  public get renderers() {
+    return this._renderers;
+  }
+  public get assets() {
+    return this._assets;
   }
 
-  private _hooks = new EventEmitter();
-
-  constructor() {
-    this._hooks.setMaxListeners(Infinity);
+  public get onBeforeUpdate() {
+    return this._onBeforeUpdate;
+  }
+  public get onUpdate() {
+    return this._onUpdate;
+  }
+  public get onAfterUpdate() {
+    return this._onAfterUpdate;
   }
 
-  public on(type: ApplicationHook, fn: (...args: any[]) => void) {
-    this._hooks.on(type, fn);
-  }
-  public off(type: ApplicationHook, fn: (...args: any[]) => void) {
-    this._hooks.removeListener(type, fn);
-  }
-
-  public ready() {
-    this._hooks.emit("ready");
+  public activate() {
+    if (!this._animationFrame) {
+      this._lastUpdate = Date.now();
+      this.update();
+    }
   }
 
-  public update(deltaTime: number) {
-    this.inputs.update();
-    this._hooks.emit("update", deltaTime);
-    this._hooks.emit("beforeRender");
+  public deactivate() {
+    if (this._animationFrame) {
+      cancelAnimationFrame(this._animationFrame);
+      this._animationFrame = undefined;
+    }
+  }
+
+  public dispose() {}
+
+  private update = () => {
+    const now = Date.now();
+    const deltaTime = (now - this._lastUpdate) * 0.001;
+    this._animationFrame = requestAnimationFrame(this.update);
+    this._lastUpdate = now;
+
+    this._onBeforeUpdate.listeners.forEach(fn => fn());
+    this._onUpdate.listeners.forEach(fn => fn(deltaTime));
+    this._onAfterUpdate.listeners.forEach(fn => fn());
+
     this.renderers.render();
-    this._hooks.emit("afterRender");
-  }
-
-  public dispose() {
-    this.inputs.dispose();
-    this._disposed = true;
-  }
+  };
 }

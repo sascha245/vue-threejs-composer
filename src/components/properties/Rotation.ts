@@ -1,10 +1,10 @@
-import * as THREE from "three";
+import { Math as ThreeMath } from "three";
 import { Component, Mixins, Prop, Watch } from "vue-property-decorator";
 
-import { ThreeObjectComponent } from "../base";
+import { ObjectComponent } from "../../mixins";
 
 @Component
-export class Rotation extends Mixins(ThreeObjectComponent) {
+export class Rotation extends Mixins(ObjectComponent) {
   @Prop({
     required: true,
     type: Object
@@ -20,10 +20,10 @@ export class Rotation extends Mixins(ThreeObjectComponent) {
   @Watch("value", { deep: true })
   private onChange() {
     if (this.rad) {
-      this.object!().rotation.set(this.value.x, this.value.y, this.value.z);
+      this.object()!.rotation.set(this.value.x, this.value.y, this.value.z);
     } else {
-      const rad = THREE.Math.degToRad;
-      this.object!().rotation.set(
+      const rad = ThreeMath.degToRad;
+      this.object()!.rotation.set(
         rad(this.value.x),
         rad(this.value.y),
         rad(this.value.z)
@@ -32,7 +32,7 @@ export class Rotation extends Mixins(ThreeObjectComponent) {
   }
 
   public created() {
-    if (!this.object) {
+    if (!this.object()) {
       throw new Error(
         "Rotation property can only be added as child to an object component"
       );

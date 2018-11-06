@@ -1,9 +1,9 @@
 import { Component, Mixins, Prop, Watch } from "vue-property-decorator";
 
-import { ThreeObjectComponent } from "../base";
+import { ObjectComponent } from "../../mixins";
 
 @Component
-export class Position extends Mixins(ThreeObjectComponent) {
+export class Position extends Mixins(ObjectComponent) {
   @Prop({
     required: true,
     type: Object
@@ -12,11 +12,11 @@ export class Position extends Mixins(ThreeObjectComponent) {
 
   @Watch("value", { deep: true })
   private onChange() {
-    this.object!().position.set(this.value.x, this.value.y, this.value.z);
+    this.object()!.position.set(this.value.x, this.value.y, this.value.z);
   }
 
   public created() {
-    if (!this.object) {
+    if (!this.object()) {
       throw new Error(
         "Position property can only be added as child to an object component"
       );
