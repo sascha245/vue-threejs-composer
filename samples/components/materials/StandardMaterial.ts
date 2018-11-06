@@ -1,7 +1,7 @@
 import { MeshStandardMaterial, Texture } from "three";
 import { Component, Prop, Vue } from "vue-property-decorator";
 
-import { Application, components, MaterialFactory } from "../../src";
+import { Application, components } from "../../../src";
 
 const { Material } = components;
 
@@ -35,22 +35,5 @@ export default class StandardMaterial extends Vue {
     });
     mat.map = texture as Texture;
     return mat;
-  }
-
-  public created() {
-    console.log("standard material created", this.name);
-    // this.factory = async (app: Application) => {
-    //   let texture;
-    //   if (this.map) {
-    //     texture = await app.assets.textures.get(this.map);
-    //   }
-    //   const mat = new MeshStandardMaterial({
-    //     color: this.color,
-    //     metalness: this.metalness
-    //   });
-    //   mat.map = texture as Texture;
-    //   console.log("standard material created");
-    //   return mat;
-    // };
   }
 }

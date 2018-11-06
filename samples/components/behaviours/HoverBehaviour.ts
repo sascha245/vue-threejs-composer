@@ -1,6 +1,6 @@
 import { Component, Mixins, Prop } from "vue-property-decorator";
 
-import { BehaviourComponent } from "../../src";
+import { BehaviourComponent } from "../../../src";
 
 @Component
 export class HoverBehaviour extends Mixins(BehaviourComponent) {

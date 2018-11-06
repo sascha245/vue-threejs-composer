@@ -1,23 +1,25 @@
+// import THREE.FBXLoader
 import "../FbxLoader";
 
 import * as THREE from "three";
 import { Component, Vue } from "vue-property-decorator";
 
 import { CameraFactory, components, LightFactory, Loader } from "../../src";
+import { HoverBehaviour } from "../components/behaviours/HoverBehaviour";
+import { OrbitBehaviour } from "../components/behaviours/OrbitBehaviour";
+import StandardMaterial from "../components/materials/StandardMaterial";
+import Crate from "../components/prefabs/Crate";
 import { cubeFactory, planeFactory } from "../factories/geometries";
-import { HoverBehaviour } from "./HoverBehaviour";
-import { MyBehaviour } from "./MyBehaviour";
-import StandardMaterial from "./StandardMaterial";
 
+// tell our model loader to use FBXLoader for .fbx extensions
 Loader.registerExtension("fbx", THREE.FBXLoader);
-
-(window as any).THREE = THREE;
 
 @Component({
   components: {
     ...components,
+    Crate,
     HoverBehaviour,
-    MyBehaviour,
+    OrbitBehaviour,
     StandardMaterial
   }
 })
@@ -71,6 +73,7 @@ export default class Demo extends Vue {
   public loadingTotal = 0;
 
   public activeScene = "scene1";
+  public activeCamera = "main";
 
   public startLoading() {
     this.isLoading = true;
