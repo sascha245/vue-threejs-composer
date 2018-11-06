@@ -34,15 +34,13 @@ export class Texture extends Mixins(AssetComponent) {
       this.bundle()!.registerAsset(this.name, this.m_texture);
     }
     app.assets.textures.set(this.name, this.m_texture);
-    console.log("texture created", this.name);
   }
 
-  public async beforeDestroy() {
+  public async destroyed() {
     if (this.bundle()) {
       this.bundle()!.unregisterAsset(this.name);
     }
     this.app().assets.textures.dispose(this.name);
-    console.log("texture disposed", this.name);
   }
 
   public render(h: any) {

@@ -55,8 +55,7 @@ export class RendererHandle extends Handle {
     return this._renderer;
   }
 
-  public setScene(name?: string) {
-    console.log("set scene", name);
+  public setScene(name?: string): Promise<void> {
     if (this._sceneName !== name) {
       this._sceneName = name;
       const scene = name ? this._app.scenes.get(name) : undefined;
@@ -64,41 +63,43 @@ export class RendererHandle extends Handle {
     }
     return this._changeQueue;
   }
-  public setCamera(name?: string) {
-    console.log("set camera", name);
+  public setCamera(name?: string): Promise<void> {
     if (this._cameraName !== name) {
       this._cameraName = name;
-      const camera = name ? this._app.cameras.get(name) : undefined;
-      return this.updateCamera(camera);
+      if (this._scene) {
+        const camera = name ? this._scene.cameras.get(name) : undefined;
+        return this.updateCamera(camera);
+      }
     }
     return this._changeQueue;
   }
 
   protected load() {
-    console.log("load renderer");
     const p = super.load();
     this._app.scenes.watch(this.watchScenes);
-    this._app.cameras.watch(this.watchCameras);
     return p.then(() => this._changeQueue);
   }
 
   protected unload() {
-    console.log("unload renderer");
     const p = super.unload();
     this._app.scenes.unwatch(this.watchScenes);
-    this._app.cameras.unwatch(this.watchCameras);
     return p.then(() => this._changeQueue);
   }
 
   private updateScene(scene?: SceneHandle): Promise<void> {
     if (this._scene !== scene) {
-      console.log("update scene");
       this._changeQueue = this._changeQueue
         .then(() => {
+          if (this._scene) {
+            this._scene.cameras.unwatch(this.watchCameras);
+          }
           return this._scene ? this._scene.unuse() : Promise.resolve();
         })
         .then(() => {
           this._scene = scene;
+          if (this._scene) {
+            this._scene.cameras.watch(this.watchCameras);
+          }
           return scene ? scene.use() : Promise.resolve();
         });
     }
@@ -106,7 +107,6 @@ export class RendererHandle extends Handle {
   }
   private updateCamera(camera?: CameraHandle): Promise<void> {
     if (this._camera !== camera) {
-      console.log("update camera");
       this._changeQueue = this._changeQueue
         .then(() => {
           return this._camera ? this._camera.unuse() : Promise.resolve();

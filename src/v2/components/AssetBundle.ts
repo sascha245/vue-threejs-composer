@@ -26,15 +26,14 @@ export class AssetBundle extends Mixins(AppComponent) {
   private m_bundle!: BundleHandle;
 
   public mounted() {
-    console.log("mounted asset bundle", this.name);
     this.m_bundle = this.app().assets.bundles.create(this.name);
     this.m_bundle.onLoad.on(this.onLoad);
     this.m_bundle.onUnload.on(this.onUnload);
 
-    //TODO handle preload
+    this.m_bundle.preload = this.preload;
   }
 
-  public beforeDestroy() {
+  public destroyed() {
     this.app().assets.bundles.dispose(this.name);
   }
 
@@ -53,21 +52,11 @@ export class AssetBundle extends Mixins(AppComponent) {
 
     await Vue.nextTick();
     await deps;
-
-    console.log("registered bundle", this.name, this.m_bundle.countAssets());
   }
 
   private async onUnload(): Promise<void> {
     this.m_active = false;
     await Vue.nextTick();
-
-    const assets = this.app().assets;
-    console.log(
-      assets.textures.size(),
-      assets.materials.size(),
-      assets.geometries.size(),
-      assets.models.size()
-    );
   }
 
   private getBundles(pDependencies: string | string[]): BundleHandle[] {

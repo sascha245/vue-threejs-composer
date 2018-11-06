@@ -24,7 +24,7 @@ export class Three extends Vue {
     this.m_ready = true;
   }
 
-  public beforeDestroy() {
+  public destroyed() {
     this.onDeactivate();
     if (this.m_app) {
       this.m_app.dispose();

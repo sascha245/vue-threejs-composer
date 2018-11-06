@@ -1,9 +1,9 @@
-import { Scene } from "three";
 import { Component, Inject, Mixins } from "vue-property-decorator";
 
+import { SceneHandle } from "../core";
 import { AppComponent } from "./AppComponent";
 
-export type SceneGetter = () => Scene | undefined;
+export type SceneGetter = () => SceneHandle | undefined;
 
 const SceneDefaultGetter = () => undefined;
 

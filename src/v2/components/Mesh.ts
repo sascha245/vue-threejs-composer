@@ -29,7 +29,8 @@ export class Mesh extends Mixins(ObjectComponent) {
   }
 
   public async created() {
-    if (!this.scene() && !this.object()) {
+    const scene = this.scene() ? this.scene()!.get() : undefined;
+    if (!scene && !this.object()) {
       throw new Error(
         "Mesh component could not be created: can only be added as child to an object or mesh component"
       );
@@ -50,14 +51,15 @@ export class Mesh extends Mixins(ObjectComponent) {
 
     this.m_mesh.name = this.name;
 
-    const parent = this.object ? this.object() : this.scene();
+    const parent = this.object ? this.object() : scene;
     parent!.add(this.m_mesh);
 
     this.m_created = true;
   }
 
-  public beforeDestroy() {
-    const parent = this.object ? this.object() : this.scene();
+  public destroyed() {
+    const scene = this.scene() ? this.scene()!.get() : undefined;
+    const parent = this.object ? this.object() : scene;
     parent!.remove(this.m_mesh);
   }
 

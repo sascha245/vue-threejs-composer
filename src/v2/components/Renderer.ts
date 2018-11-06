@@ -89,7 +89,7 @@ export class Renderer extends Mixins(AppComponent) {
     renderer.setSize(width, height);
   }
 
-  public beforeDestroy() {
+  public destroyed() {
     window.removeEventListener("resize", this.handleResize);
     this.app().renderers.dispose(this.m_name);
   }

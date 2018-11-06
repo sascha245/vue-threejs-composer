@@ -19,7 +19,7 @@ export class Geometry extends Mixins(AssetComponent) {
     this.app().assets.geometries.set(this.name, geometry);
   }
 
-  public async beforeDestroy() {
+  public async destroyed() {
     if (this.bundle()) {
       this.bundle()!.unregisterAsset(this.name);
     }

@@ -14,12 +14,20 @@ export class BundleHandle extends Handle {
   private _dependencies: BundleHandle[] = [];
   private _registered = this.queue;
 
+  private _preload: boolean = false;
+
   private _onLoadProgress = new EventDispatcher<
     (amount: number, total: number, name: string) => Promise<void>
   >();
 
   public get onLoadProgress() {
     return this._onLoadProgress;
+  }
+  public get preload() {
+    return this.preload;
+  }
+  public set preload(val: boolean) {
+    this._preload = val;
   }
 
   /**
@@ -106,7 +114,6 @@ export class BundleHandle extends Handle {
   }
 
   protected load() {
-    console.log("bundle load");
     this._registered = super.load();
     return this._registered
       .then(() => {
@@ -119,9 +126,8 @@ export class BundleHandle extends Handle {
   }
 
   protected unload() {
-    console.log("bundle unload");
-    const p = super.unload();
-    return p
+    return super
+      .unload()
       .then(() => {
         const deps = this._dependencies.map(dep => dep.unuse());
         return Promise.all(deps).then(() => Promise.resolve());
@@ -137,12 +143,6 @@ export class BundleHandle extends Handle {
     const allAssets = this.listAssets();
     const total = allAssets.length;
     let count = 0;
-
-    console.log(
-      `bundle await all ${allAssets.length} assets from ${
-        this._dependencies.length
-      } bundles`
-    );
 
     const pAssets = allAssets.map(asset => {
       return asset.value.then(() => {

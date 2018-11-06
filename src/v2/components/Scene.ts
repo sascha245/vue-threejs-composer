@@ -17,7 +17,7 @@ export class Scene extends Mixins(AppComponent) {
   private provideScene = this.getScene;
 
   private getScene() {
-    return this.m_scene.get();
+    return this.m_scene;
   }
 
   private m_active = false;
@@ -25,8 +25,6 @@ export class Scene extends Mixins(AppComponent) {
 
   public async onLoad() {
     this.$emit("load");
-    console.log("app", this.app());
-    console.log("onLoad scene", this, this.bundles());
     await this.m_scene.registerDependencies(this.bundles());
   }
   public async onLoadProgress(amount: number, total: number) {
@@ -35,32 +33,26 @@ export class Scene extends Mixins(AppComponent) {
   public async onActivate() {
     const scene = new ThreeScene();
     scene.name = this.name;
-
-    this.$emit("loaded");
-    console.log("activate scene", this.bundles());
-
     this.m_scene.set(scene);
     this.m_active = true;
+    await Vue.nextTick();
+    this.$emit("loaded");
   }
   public async onUnload() {
     this.m_active = false;
     await Vue.nextTick();
     this.m_scene.set(undefined);
-
-    console.log("unload scene");
   }
 
   public mounted() {
-    console.log("mounted scene");
     this.m_scene = this.app().scenes.create(this.name);
     this.m_scene.onLoad.on(this.onLoad);
     this.m_scene.onActivate.on(this.onActivate);
     this.m_scene.onUnload.on(this.onUnload);
     this.m_scene.onLoadProgress.on(this.onLoadProgress);
-    console.log("mount scene finished", this);
   }
 
-  public beforeDestroy() {
+  public destroyed() {
     this.app().scenes.dispose(this.name);
   }
 

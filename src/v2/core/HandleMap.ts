@@ -25,8 +25,7 @@ export class HandleMap<T extends Handle> {
   }
   public set(name: string, handler: T): void {
     if (this._data.has(name)) {
-      console.log("handler already exists in map", name);
-      throw HandlerMapErrors.ALREADY_EXISTS;
+      throw HandlerMapErrors.ALREADY_EXISTS(name);
     }
     this._data.set(name, handler);
     this.emitChange(name, handler);
@@ -34,26 +33,30 @@ export class HandleMap<T extends Handle> {
   public get(name: string): T | undefined {
     return this._data.get(name);
   }
-  public dispose(name?: string) {
+  public dispose(name?: string): Promise<void> {
     if (!name) {
+      const promises: Array<Promise<void>> = [];
       this._data.forEach((item, key) => {
         this.emitChange(key, undefined);
-        this.disposeHook(item);
+        const p = this.disposeHook(item);
+        promises.push(p);
       });
       this._data.clear();
-      return;
+      return Promise.all(promises).then(() => Promise.resolve());
     }
 
     const handler = this._data.get(name);
     if (handler) {
       this.emitChange(name, undefined);
-      this.disposeHook(handler);
+      const p = this.disposeHook(handler);
       this._data.delete(name);
+      return p;
     }
+    return Promise.resolve();
   }
 
   protected disposeHook(handler: T) {
-    handler.dispose();
+    return handler.dispose();
   }
   protected factoryHook(): T {
     return new this._ctor();

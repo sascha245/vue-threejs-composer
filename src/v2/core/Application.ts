@@ -1,13 +1,11 @@
 import { AssetManager } from "./AssetManager";
-import { CameraManager } from "./CameraManager";
 import { EventDispatcher } from "./EventDispatcher";
 import { Loader } from "./Loader";
 import { RendererManager } from "./RendererManager";
 import { SceneManager } from "./SceneManager";
 
 export class Application {
-  private _scenes = new SceneManager(this);
-  private _cameras = new CameraManager(this);
+  private _scenes = new SceneManager();
   private _renderers = new RendererManager(this);
   private _assets = new AssetManager(this);
   private _loader = new Loader();
@@ -24,9 +22,6 @@ export class Application {
   }
   public get scenes() {
     return this._scenes;
-  }
-  public get cameras() {
-    return this._cameras;
   }
   public get renderers() {
     return this._renderers;

@@ -17,15 +17,13 @@ export class Material extends Mixins(AssetComponent) {
       this.bundle()!.registerAsset(this.name, material);
     }
     this.app().assets.materials.set(this.name, material);
-    console.log("material created", this.name);
   }
 
-  public async beforeDestroy() {
+  public async destroyed() {
     if (this.bundle()) {
       this.bundle()!.unregisterAsset(this.name);
     }
     this.app().assets.materials.dispose(this.name);
-    console.log("material disposed", this.name);
   }
 
   public render(h: any) {

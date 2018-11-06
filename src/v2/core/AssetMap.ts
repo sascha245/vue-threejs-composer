@@ -13,8 +13,7 @@ export class AssetMap<T> {
 
   public set(name: string, asset: Promise<T>): void {
     if (this._data.has(name)) {
-      console.log("asset already exists in map", name);
-      throw AssetMapErrors.ALREADY_EXISTS;
+      throw AssetMapErrors.ALREADY_EXISTS(name);
     }
     this._data.set(name, asset);
   }

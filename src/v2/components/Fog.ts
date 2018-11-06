@@ -28,12 +28,13 @@ export class Fog extends Mixins(SceneComponent) {
 
   @Watch("exp2")
   public watchExp() {
+    const scene = this.scene() ? this.scene()!.get() : undefined;
     if (this.exp2) {
       this.m_fog = new ThreeFogExp2(this.color, this.density);
     } else {
       this.m_fog = new ThreeFog(this.color, this.near, this.far);
     }
-    this.scene()!.fog = this.m_fog;
+    scene!.fog = this.m_fog;
   }
   @Watch("near")
   public watchNear() {
@@ -58,7 +59,7 @@ export class Fog extends Mixins(SceneComponent) {
   private m_fog!: IFog;
 
   public created() {
-    const scene = this.scene();
+    const scene = this.scene() ? this.scene()!.get() : undefined;
     if (!scene) {
       throw new Error(
         "Fog component can only be added as a child to a scene component"
@@ -76,8 +77,8 @@ export class Fog extends Mixins(SceneComponent) {
     scene.fog = this.m_fog;
   }
 
-  public beforeDestroy() {
-    const scene = this.scene();
+  public destroyed() {
+    const scene = this.scene() ? this.scene()!.get() : undefined;
     scene!.fog = null;
   }
 

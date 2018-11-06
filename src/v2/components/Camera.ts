@@ -31,23 +31,34 @@ export class Camera extends Mixins(ObjectComponent) {
 
   public async created() {
     const app = this.app();
+    const sceneHandle = this.scene();
+    const scene = sceneHandle ? this.scene()!.get() : undefined;
+    if (!scene) {
+      throw new Error(
+        "Camera component can only be added as child to an object or scene component"
+      );
+    }
 
     const camera = await this.factory(app);
     camera.name = this.name;
 
-    this.m_camera = app.cameras.create(this.name);
+    this.m_camera = sceneHandle!.cameras.create(this.name);
     this.m_camera.set(camera);
     this.m_camera.onActivate.on(this.onActivate);
     this.m_camera.onDeactivate.on(this.onDeactivate);
 
     this.m_active = true;
 
-    console.log("camera created", this.name);
+    const parent = this.object ? this.object() : scene;
+    parent!.add(this.m_camera.get()!);
   }
 
-  public beforeDestroy() {
-    this.app().cameras.dispose(this.name);
-    console.log("camera disposed", this.name);
+  public destroyed() {
+    const sceneHandle = this.scene();
+    const scene = sceneHandle ? this.scene()!.get() : undefined;
+    const parent = this.object ? this.object() : scene;
+    parent!.remove(this.m_camera.get()!);
+    sceneHandle!.cameras.dispose(this.name);
   }
 
   public render(h: any) {

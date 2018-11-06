@@ -23,7 +23,8 @@ export class Light extends Mixins(ObjectComponent) {
   }
 
   public async created() {
-    if (!this.scene() && !this.object()) {
+    const scene = this.scene() ? this.scene()!.get() : undefined;
+    if (!scene && !this.object()) {
       throw new Error(
         "Light component can only be added as child to an object or scene component"
       );
@@ -31,14 +32,15 @@ export class Light extends Mixins(ObjectComponent) {
 
     this.m_light = await this.factory(this.app());
     this.m_light.name = this.name;
-    const parent = this.object ? this.object() : this.scene();
+    const parent = this.object ? this.object() : scene;
     parent!.add(this.m_light);
 
     this.m_created = true;
   }
 
-  public beforeDestroy() {
-    const parent = this.object ? this.object() : this.scene();
+  public destroyed() {
+    const scene = this.scene() ? this.scene()!.get() : undefined;
+    const parent = this.object ? this.object() : scene;
     parent!.remove(this.m_light);
   }
 

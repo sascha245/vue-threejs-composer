@@ -41,15 +41,13 @@ export class Model extends Mixins(AssetComponent) {
       this.bundle()!.registerAsset(this.name, this.m_model);
     }
     app.assets.models.set(this.name, this.m_model);
-    console.log("model created", this.name);
   }
 
-  public async beforeDestroy() {
+  public async destroyed() {
     if (this.bundle()) {
       this.bundle()!.unregisterAsset(this.name);
     }
     this.app().assets.models.dispose(this.name);
-    console.log("model disposed", this.name);
   }
 
   public render(h: any) {

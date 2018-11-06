@@ -3,7 +3,7 @@ import { HandleMap } from "./HandleMap";
 import { SceneHandle } from "./SceneHandle";
 
 export class SceneManager extends HandleMap<SceneHandle> {
-  constructor(private app: Application) {
+  constructor() {
     super(SceneHandle);
   }
 }
