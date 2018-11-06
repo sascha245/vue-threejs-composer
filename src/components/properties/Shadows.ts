@@ -1,9 +1,9 @@
 import { Component, Mixins, Prop, Watch } from "vue-property-decorator";
 
-import { ThreeObjectComponent } from "../base";
+import { ObjectComponent } from "../../mixins";
 
 @Component
-export class Shadows extends Mixins(ThreeObjectComponent) {
+export class Shadows extends Mixins(ObjectComponent) {
   @Prop({
     default: false,
     type: Boolean
@@ -20,19 +20,19 @@ export class Shadows extends Mixins(ThreeObjectComponent) {
     default: false,
     type: Boolean
   })
-  private recursive!: boolean;
+  private deep!: boolean;
 
   @Watch("receive")
   private onChangeReceive() {
-    this.changeReceive(this.object!());
+    this.changeReceive(this.object()!);
   }
   @Watch("cast")
   private onChangeCast() {
-    this.changeCast(this.object!());
+    this.changeCast(this.object()!);
   }
 
   public created() {
-    if (!this.object) {
+    if (!this.object()) {
       throw new Error(
         "Shadows property can only be added as child to an object component"
       );
@@ -47,13 +47,13 @@ export class Shadows extends Mixins(ThreeObjectComponent) {
 
   private changeReceive(obj: THREE.Object3D) {
     obj.receiveShadow = this.receive;
-    if (this.recursive && obj.children) {
+    if (this.deep && obj.children) {
       obj.children.forEach(this.changeReceive);
     }
   }
   private changeCast(obj: THREE.Object3D) {
     obj.castShadow = this.cast;
-    if (this.recursive && obj.children) {
+    if (this.deep && obj.children) {
       obj.children.forEach(this.changeCast);
     }
   }

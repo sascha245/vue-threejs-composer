@@ -1,9 +1,9 @@
 import { Component, Mixins, Prop } from "vue-property-decorator";
 
-import { Behaviour } from "../../src";
+import { BehaviourComponent } from "../../../src";
 
 @Component
-export class HoverBehaviour extends Mixins(Behaviour) {
+export class HoverBehaviour extends Mixins(BehaviourComponent) {
   @Prop({ required: true, type: Object })
   public position!: { y: number };
 

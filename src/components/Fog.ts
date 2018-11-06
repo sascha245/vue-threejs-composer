@@ -1,10 +1,10 @@
-import * as THREE from "three";
-import { Component, Mixins, Prop, Provide, Watch } from "vue-property-decorator";
+import { Color, Fog as ThreeFog, FogExp2 as ThreeFogExp2, IFog } from "three";
+import { Component, Mixins, Prop, Watch } from "vue-property-decorator";
 
-import { ThreeComponent, ThreeSceneComponent } from "./base";
+import { SceneComponent } from "../mixins";
 
 @Component
-export class Fog extends Mixins(ThreeComponent, ThreeSceneComponent) {
+export class Fog extends Mixins(SceneComponent) {
   @Prop({ type: Number, default: 0xffffff })
   public color!: number;
 
@@ -25,67 +25,64 @@ export class Fog extends Mixins(ThreeComponent, ThreeSceneComponent) {
     this.m_color.set(this.color);
     this.m_fog.color.set(this.color);
   }
+
   @Watch("exp2")
   public watchExp() {
+    const scene = this.scene() ? this.scene()!.get() : undefined;
     if (this.exp2) {
-      this.m_fog = new THREE.FogExp2(this.color, this.density);
+      this.m_fog = new ThreeFogExp2(this.color, this.density);
     } else {
-      this.m_fog = new THREE.Fog(this.color, this.near, this.far);
+      this.m_fog = new ThreeFog(this.color, this.near, this.far);
     }
-    this.scene().fog = this.m_fog;
+    scene!.fog = this.m_fog;
   }
   @Watch("near")
   public watchNear() {
-    if (this.m_fog instanceof THREE.Fog) {
+    if (this.m_fog instanceof ThreeFog) {
       this.m_fog.near = this.near;
     }
   }
   @Watch("near")
   public watchFar() {
-    if (this.m_fog instanceof THREE.Fog) {
+    if (this.m_fog instanceof ThreeFog) {
       this.m_fog.far = this.far;
     }
   }
   @Watch("density")
   public watchDensity() {
-    if (this.m_fog instanceof THREE.FogExp2) {
+    if (this.m_fog instanceof ThreeFogExp2) {
       this.m_fog.density = this.density;
     }
   }
 
-  private m_color!: THREE.Color;
-  private m_fog!: THREE.IFog;
-  private m_created = false;
+  private m_color!: Color;
+  private m_fog!: IFog;
 
-  public async created() {
-    if (!this.scene) {
+  public created() {
+    const scene = this.scene() ? this.scene()!.get() : undefined;
+    if (!scene) {
       throw new Error(
         "Fog component can only be added as a child to a scene component"
       );
     }
 
-    this.m_color = new THREE.Color(this.color);
+    this.m_color = new Color(this.color);
     if (this.exp2) {
-      this.m_fog = new THREE.FogExp2(this.color, this.density);
+      this.m_fog = new ThreeFogExp2(this.color, this.density);
     } else {
-      this.m_fog = new THREE.Fog(this.color, this.near, this.far);
+      this.m_fog = new ThreeFog(this.color, this.near, this.far);
     }
-    const scene = this.scene();
+
     scene.background = this.m_color;
     scene.fog = this.m_fog;
-
-    this.m_created = true;
   }
 
-  public beforeDestroy() {
-    const scene = this.scene();
-    scene.fog = null;
+  public destroyed() {
+    const scene = this.scene() ? this.scene()!.get() : undefined;
+    scene!.fog = null;
   }
 
   public render(h: any) {
-    if (!this.m_created) {
-      return null;
-    }
     return h();
   }
 }

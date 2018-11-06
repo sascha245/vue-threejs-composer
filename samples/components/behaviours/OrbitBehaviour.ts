@@ -1,7 +1,7 @@
 import * as THREE from "three";
 import { Component, Mixins, Prop } from "vue-property-decorator";
 
-import { Behaviour } from "../../src";
+import { BehaviourComponent } from "../../../src";
 import { OrbitControls } from "./OrbitControls";
 
 interface Vec3 {
@@ -11,7 +11,7 @@ interface Vec3 {
 }
 
 @Component
-export class MyBehaviour extends Mixins(Behaviour) {
+export class OrbitBehaviour extends Mixins(BehaviourComponent) {
   @Prop()
   public data!: {
     position: Vec3;
@@ -23,7 +23,7 @@ export class MyBehaviour extends Mixins(Behaviour) {
 
   public created() {
     if (!this.data) {
-      throw new Error("Could not initialize MyBehaviour: data is missing");
+      throw new Error("Could not initialize OrbitBehaviour: data is missing");
     }
     this.camera = new THREE.PerspectiveCamera();
     this.controls = new OrbitControls(this.camera);

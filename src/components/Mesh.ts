@@ -1,15 +1,11 @@
 import * as THREE from "three";
 import { Component, Mixins, Prop, Provide } from "vue-property-decorator";
 
-import { AssetTypes, GeometryType, MaterialType, ModelType } from "../types";
-import { ThreeComponent, ThreeObjectComponent, ThreeSceneComponent } from "./base";
+import { GeometryType, MaterialType, ModelType } from "../core";
+import { ObjectComponent } from "../mixins";
 
 @Component
-export class Mesh extends Mixins(
-  ThreeComponent,
-  ThreeSceneComponent,
-  ThreeObjectComponent
-) {
+export class Mesh extends Mixins(ObjectComponent) {
   @Prop({ type: String, default: "" })
   private name!: string;
 
@@ -33,7 +29,8 @@ export class Mesh extends Mixins(
   }
 
   public async created() {
-    if (!this.scene && !this.object) {
+    const scene = this.scene() ? this.scene()!.get() : undefined;
+    if (!scene && !this.object()) {
       throw new Error(
         "Mesh component could not be created: can only be added as child to an object or mesh component"
       );
@@ -54,15 +51,16 @@ export class Mesh extends Mixins(
 
     this.m_mesh.name = this.name;
 
-    const parent = this.object ? this.object() : this.scene();
-    parent.add(this.m_mesh);
+    const parent = this.object ? this.object() : scene;
+    parent!.add(this.m_mesh);
 
     this.m_created = true;
   }
 
-  public beforeDestroy() {
-    const parent = this.object ? this.object() : this.scene();
-    parent.remove(this.m_mesh);
+  public destroyed() {
+    const scene = this.scene() ? this.scene()!.get() : undefined;
+    const parent = this.object ? this.object() : scene;
+    parent!.remove(this.m_mesh);
   }
 
   public render(h: any) {
@@ -73,7 +71,8 @@ export class Mesh extends Mixins(
   }
 
   private async createMeshFromModel() {
-    const model = await this.app().assets.get(this.model, AssetTypes.MODEL);
+    const app = this.app();
+    const model = await app.assets.models.get(this.model);
     if (!model) {
       throw new Error(`
         Mesh component could not be created: could not find model "${
@@ -85,33 +84,24 @@ export class Mesh extends Mixins(
   }
 
   private async createMeshFromGeomAndMat() {
-    const materialProm = this.app().assets.get(
-      this.material,
-      AssetTypes.MATERIAL
-    );
-    const geometryProm = this.app().assets.get(
-      this.geometry,
-      AssetTypes.GEOMETRY
-    );
+    const promMat = this.app().assets.materials.get(this.material);
+    const promGeom = this.app().assets.geometries.get(this.geometry);
 
-    if (!materialProm) {
+    if (!promMat) {
       throw new Error(
         `Mesh with name "${this.name}" could not be instanciated: material "${
           this.material
         }" could not be found`
       );
     }
-    if (!geometryProm) {
+    if (!promGeom) {
       throw new Error(
         `Mesh with name "${this.name}" could not be instanciated: geometry "${
           this.geometry
         }" could not be found`
       );
     }
-    const [material, geometry] = await Promise.all([
-      materialProm,
-      geometryProm
-    ]);
+    const [material, geometry] = await Promise.all([promMat, promGeom]);
 
     return new THREE.Mesh(geometry as GeometryType, material as MaterialType);
   }

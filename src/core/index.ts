@@ -1,12 +1,19 @@
-import * as Utils from "./Utils";
-
 export * from "./Application";
-export * from "./AssetBundle";
-export * from "./AssetManager";
-export * from "./SceneManager";
-export * from "./CameraManager";
-export * from "./InputManager";
-export * from "./RendererManager";
-export * from "./RendererHandler";
 
-export { Utils };
+export * from "./AssetManager";
+export * from "./AssetMap";
+export * from "./AssetTypes";
+
+export * from "./BundleHandle";
+export * from "./BundleManager";
+
+export * from "./CameraHandle";
+export * from "./CameraManager";
+
+export * from "./RendererHandle";
+export * from "./RendererManager";
+
+export * from "./SceneHandle";
+export * from "./SceneManager";
+
+export * from "./Loader";

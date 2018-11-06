@@ -13,6 +13,7 @@
     // "no-implicit-dependencies": [true, "dev"],
     "ban-types": false,
     "member-ordering": false,
-    "curly": false
+    "curly": false,
+    "no-empty": false
   }
 }

@@ -1,10 +1,10 @@
 import { Component, Mixins, Prop } from "vue-property-decorator";
 
-import { AssetTypes, GeometryFactory, GeometryType } from "../types";
-import { ThreeAssetComponent, ThreeComponent } from "./base";
+import { GeometryFactory, GeometryType } from "../core";
+import { AssetComponent } from "../mixins";
 
 @Component
-export class Geometry extends Mixins(ThreeComponent, ThreeAssetComponent) {
+export class Geometry extends Mixins(AssetComponent) {
   @Prop({ required: true, type: String })
   public name!: string;
 
@@ -12,12 +12,18 @@ export class Geometry extends Mixins(ThreeComponent, ThreeAssetComponent) {
   public factory!: GeometryFactory;
 
   public async created() {
-    this.asset = this.factory(this.app());
-    this.app().assets.add(this.name, AssetTypes.GEOMETRY, this.asset);
+    const geometry = this.factory(this.app());
+    if (this.bundle()) {
+      this.bundle()!.registerAsset(this.name, geometry);
+    }
+    this.app().assets.geometries.set(this.name, geometry);
   }
 
-  public async beforeDestroy() {
-    this.app().assets.remove(this.name, AssetTypes.GEOMETRY);
+  public async destroyed() {
+    if (this.bundle()) {
+      this.bundle()!.unregisterAsset(this.name);
+    }
+    this.app().assets.geometries.dispose(this.name);
   }
 
   public render(h: any) {

@@ -1,8 +1,10 @@
 # vue-threejs-composer
 
-/!\ This module is still in development.
-
 Build beautiful and interactive scenes in the easy way.
+
+## What?
+
+This library focuses on managing your THREE.js assets and objects, but nothing more. As such, it won't include any basic geometries, materials, as you can easily implement custom ones yourself as we will see later.
 
 ## Features
 
@@ -14,100 +16,71 @@ This library's strong points:
 
 3. Easily load 3D models and assign their materials
 
-4. If necessary, easily create even the most unique geometries, materials and textures with dedicated factory functions.
+4. Easily create custom geometries and materials with dedicated factory functions.
 
-**Note:** This library focuses on managing your THREE.js assets and objects more than all other aspects. As such, it won't include any basic geometries, materials. These optional features will however later be available in other packages.
-
-### To be removed
-
-For now these features are still included in this package, but will later be moved in optional packages to let this package focus more on the core aspects.
-
-- Behaviour components you can attach to objects, scenes or your application in which you can update whatever needed.
-
-- Inbuild input manager to handle inputs in a more straightforward way.
 
 ## Usage
 
 ### Installation
 
 1. Install THREE.js:
-
 `npm install three --save`
 
 2. Optionally, install THREE.js typings:
-
 `npm install @types/three --save-dev`
 
 3. Install this package:
-
 `npm install vue-threejs-composer --save`
+
 
 ### Samples
 
 If you want to test out our samples, you can clone our repository and launch our samples with the following commands:
 
 1. Install dependencies
-
 `npm install`
 
 2. Launch development server
-
 `npm run serve`
 
 3. Play around with the files in */samples*. The demo scene is situated at */samples/views/Demo.vue*
 
-### Define your scenes
+#### Define your scenes
 
 ```html
 <div>
 
-  <div>
-    <div class="screen">
-      <canvas ref="canvas" class="screen-canvas"></canvas>
-      <div class="screen-loading" v-if="isLoading">
-        <div>
-          <p>Loading...</p>
-          <p>{{loadingAmount}} / {{loadingTotal}}</p>
-        </div>
-      </div>
-    </div>
-  </div>
-
+  <canvas ref="canvas"></canvas>
   <div v-if="canvas">
     <three>
-        <renderer :canvas="canvas" camera="main" :scene="activeScene" antialias shadows/>
+        <renderer :canvas="canvas" :camera="activeCamera" :scene="activeScene" antialias shadows/>
 
         <asset-bundle name="PolygonMini" preload>
           <texture name="PolygonMini_Tex" src="/assets/textures/PolygonMinis_Texture_01.png"/>
 
-          <material name="PolygonMini_Mat" :factory="polygonMaterialFactory"/>
+          <standard-material name="PolygonMini_Mat" map="PolygonMini_Tex"/>
 
-          <model name="grassModel" src="/assets/models/SM_Env_Grass_01.fbx" materials="PolygonMini_Mat"/>
           <model name="PM_column" src="/assets/models/SM_Tile_Hex_Column_02.fbx" materials="PolygonMini_Mat"/>
           <model name="PM_flat" src="/assets/models/SM_Tile_Hex_Flat_01.fbx" materials="PolygonMini_Mat"/>
         </asset-bundle>
 
-        <asset-bundle name="Basics" preload>
+        <asset-bundle name="Forms">
           <geometry name="cube" :factory="cubeFactory"/>
           <geometry name="plane" :factory="planeFactory"/>
         </asset-bundle>
 
-        <asset-bundle name="Crate" dependencies="Basics" preload>
-          <texture name="crateTex" src="/assets/textures/crate.jpg"/>
-          <material name="cubeMat" :factory="cubeMaterialFactory"/>
+        <asset-bundle dependencies="Forms" name="Water" preload>
+          <standard-material name="waterMat" color="#9c9cff"/>
         </asset-bundle>
 
-        <asset-bundle name="Water" dependencies="Basics" preload>
-          <material name="waterMat" :factory="waterMaterialFactory"/>
-        </asset-bundle>
-
-        <scene name="scene1" assets="PolygonMini, Water, Crate" @load="startLoading" @load-progress="loadingProgress" @loaded="finishLoading">
+        <scene name="scene1" assets="PolygonMini, Water">
 
           <fog exp2/>
 
           <camera name="main" :factory="cameraFactory">
             <position :value="scene1.camera.position"/>
             <rotation :value="scene1.camera.rotation" rad/>
+            <orbit-behaviour :data="scene1.camera"/>
           </camera>
 
           <light name="sun" :factory="lightFactory">
@@ -115,36 +88,21 @@ If you want to test out our samples, you can clone our repository and launch our
             <shadows cast/>
           </light>
 
-          <grid>
-            <position :value="{ x: -10, y: 0.5, z: -10 }"/>
-          </grid>
-          <axes>
-            <position :value="{ x: -10, y: 0.5, z: -10 }"/>
-          </axes>
+          <mesh geometry="plane" material="waterMat">
+            <rotation :value="{ x: -90, y: 0, z: 0 }"/>
+            <shadows receive/>
+          </mesh>
 
           <group>
-            <position :value="{ x: 0, y: 0, z: 0 }"/>
+            <position :value="{ x: 10, y: 3, z: 10 }"/>
+            <scale :value="{ x: 0.01, y: 0.01, z: 0.01 }"/>
+            <shadows cast receive/>
 
-            <mesh name="waterPlane" geometry="plane" material="waterMat">
-              <rotation :value="{ x: -90, y: 0, z: 0 }"/>
-              <shadows receive/>
+            <mesh model="PM_column">
+              <shadows cast receive deep/>
             </mesh>
-
-            <mesh model="grassModel" name="grass">
-              <position :value="{ x: 10, y: 0, z: 10 }"/>
-              <scale :value="{ x: 0.05, y: 0.05, z: 0.05 }"/>
-              <shadows cast receive recursive/>
-            </mesh>
-
-            <mesh v-for="field in scene1.fields"
-              :key="field.id"
-              geometry="cube"
-              material="cubeMat"
-              >
-              <position :value="{ x: field.x * 2, y: field.y + 5, z: field.z * -2}"/>
-              <shadows cast receive/>
-
-              <hover-behaviour :position="field" :distance="5"/>
+            <mesh model="PM_flat">
+              <shadows cast receive deep/>
             </mesh>
           </group>
 
@@ -155,163 +113,70 @@ If you want to test out our samples, you can clone our repository and launch our
 </div>
 ```
 
-Naturally, you would normally split this component into multiple smaller ones.
-Here what your component could look like on the script side:
+**Note**: The *OrbitBehaviour*, as well as the *StandardMaterial* components are not included in the library. You may however look them up in the samples if you wish.
+
+
+#### Define custom materials
+
+```html
+<template>
+  <material :factory="factory" :name="name"/>
+</template>
+```
 
 ```ts
-import "../FbxLoader";
+import { MeshStandardMaterial, Texture } from "three";
+import { Component, Prop, Vue } from "vue-property-decorator";
 
-import * as THREE from "three";
-import { Component, Vue } from "vue-property-decorator";
+import { Application, components } from "../../../src";
 
-import {
-    Application, AssetTypes, CameraFactory, components, GeometryFactory, LightFactory,
-    MaterialFactory
-} from "vue-threejs-composer";
-import { HoverBehaviour } from "./HoverBehaviour";
+const { Material } = components;
 
 @Component({
   components: {
-    ...components,
-    HoverBehaviour
+    Material
   }
 })
-export default class About extends Vue {
-  public cubeFactory: GeometryFactory = async (app: Application) => {
-    return new THREE.BoxBufferGeometry(1, 1, 1);
-  };
+export default class StandardMaterial extends Vue {
+  @Prop({ required: true, type: String })
+  public name!: string;
 
-  public planeFactory: GeometryFactory = async (app: Application) => {
-    return new THREE.PlaneBufferGeometry(100, 100);
-  };
+  @Prop({ type: String })
+  public map!: string;
 
-  public cubeMaterialFactory: MaterialFactory = async (app: Application) => {
-    const texture = await app.assets.get("crateTex", AssetTypes.TEXTURE);
+  @Prop({ type: String, default: "#ffffff" })
+  public color!: string;
 
-    if (!texture) {
-      throw new Error("Could not find 'crateTex' texture");
-    }
-    const mat = new THREE.MeshPhysicalMaterial({
-      metalness: 0.01
-    });
-    mat.map = texture as THREE.Texture;
-    return mat;
-  };
+  @Prop({ type: Number, default: 0.01 })
+  public metalness!: number;
 
-  public waterMaterialFactory: MaterialFactory = async (app: Application) => {
-    const mat = new THREE.MeshPhysicalMaterial({
-      color: "#9c9cff",
-      metalness: 0.01
-    });
-    return mat;
-  };
-
-  public polygonMaterialFactory: MaterialFactory = async (app: Application) => {
-    const texture = await app.assets.get("PolygonMini_Tex", AssetTypes.TEXTURE);
-
-    if (!texture) {
-      throw new Error("Could not find 'PolygonMini_Tex' texture");
+  public async factory(app: Application) {
+    let texture;
+    if (this.map) {
+      texture = await app.assets.textures.get(this.map);
     }
 
-    const mat = new THREE.MeshStandardMaterial({
-      color: "#eeeeee",
-      metalness: 0.01
+    const mat = new MeshStandardMaterial({
+      color: this.color,
+      metalness: this.metalness
     });
-    mat.map = texture as THREE.Texture;
+    mat.map = texture as Texture;
     return mat;
-  };
-
-  public lightFactory: LightFactory = async () => {
-    const light = new THREE.PointLight(0xffffff, 1, 100);
-
-    light.shadow.mapSize.width = 512; // default
-    light.shadow.mapSize.height = 512; // default
-    light.shadow.camera.near = 0.3; // default
-    light.shadow.camera.far = 500; // default
-
-    return light;
-  };
-
-  public cameraFactory: CameraFactory = async () => {
-    const viewAngle = 60;
-    const nearClipping = 0.1;
-    const farClipping = 1000;
-    return new THREE.PerspectiveCamera(
-      viewAngle,
-      window.innerWidth / window.innerHeight,
-      nearClipping,
-      farClipping
-    );
-  };
-
-  public canvas: HTMLCanvasElement | null = null;
-
-  public scene1 = {
-    camera: {
-      position: {
-        x: 0,
-        y: 10,
-        z: 0
-      },
-      rotation: {
-        x: 0,
-        y: 0,
-        z: 0
-      }
-    },
-    fields: new Array()
-  };
-
-  public isLoading = true;
-  public loadingAmount = 0;
-  public loadingTotal = 0;
-
-  public activeScene = this.scene1.name;
-
-  public startLoading() {
-    this.isLoading = true;
-  }
-  public finishLoading() {
-    this.isLoading = false;
-  }
-  public loadingProgress(amount: number, total: number) {
-    this.loadingAmount = amount;
-    this.loadingTotal = total;
-  }
-
-  public changeScene(name: string) {
-    this.activeScene = name;
-  }
-
-  public mounted() {
-    this.canvas = this.$refs.canvas as HTMLCanvasElement;
-    let idx = 0;
-    for (let x = 0; x < 5; ++x) {
-      for (let z = 0; z < 5; ++z) {
-        this.scene1.fields.push({
-          x,
-          z,
-          id: `field_${idx}`,
-          y: 0
-        });
-        ++idx;
-      }
-    }
   }
 }
-
 ```
 
+**Note**: You can also create custom geometries in a very similar way with factory functions.
 
-### Define custom behaviours
+#### Define custom behaviours
 
 ```ts
 import { Component, Mixins, Prop } from "vue-property-decorator";
 
-import { Behaviour } from "vue-threejs-composer";
+import { BehaviourComponent } from "vue-threejs-composer";
 
 @Component
-export class HoverBehaviour extends Mixins(Behaviour) {
+export class HoverBehaviour extends Mixins(BehaviourComponent) {
   @Prop({ required: true, type: Object })
   public position!: { x: number, y: number, z: number };
 
@@ -327,10 +192,8 @@ export class HoverBehaviour extends Mixins(Behaviour) {
   public created() {
     // access app
     const app = this.app();
-
-    // access scene if behaviour is placed in a scene
+    // access scene handler if behaviour is placed in a scene
     const scene = this.scene();
-
     // access object if behaviour is placed in an object
     const object = this.object();
 
@@ -340,18 +203,20 @@ export class HoverBehaviour extends Mixins(Behaviour) {
     this.ready();
   }
 
-  // lifecycle function called before each frame (optional)
+  // lifecycle function called on each frame (optional)
   public update(deltaTime: number) {
     this.position.y += deltaTime * (this.m_moveUp ? 1 : -1) * this.speed;
 
-    if (this.position.y > (this.m_originalY + this.distance)) {
+    const min = this.m_originalY - this.distance;
+    const max = this.m_originalY + this.distance;
+    if (this.position.y > max) {
       this.m_moveUp = false;
-    } else if (this.position.y < (this.m_originalY - this.distance)) {
+    } else if (this.position.y < min) {
       this.m_moveUp = true;
     }
   }
 
-  public beforeDestroy() {
+  public destroyed() {
     // dispose everything that needs to be disposed here
   }
 
@@ -361,11 +226,23 @@ export class HoverBehaviour extends Mixins(Behaviour) {
 }
 ```
 
+## Documentation
+
+As this module has only been recently released, there is no official documentation available yet.
+
+For now, I added some samples to show how to use and implement your geometries, materials and prefabs.
+
+If you have any questions, don't hesitate to open up a ticket.
+
+## Bugs
+
+The core features presented should be stable.
+But as this module is still young, it will probably still have some bugs here and there.
+
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) for details
 
 ## Acknowledgments
 
-- First version of a input manager based on [pinput](https://github.com/ichub/pinput)
 - Handling of multiple renderer inspired by [vue-gl](https://github.com/vue-gl/vue-gl)

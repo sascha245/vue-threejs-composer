@@ -1,14 +1,10 @@
 import * as THREE from "three";
 import { Component, Mixins, Prop, Provide } from "vue-property-decorator";
 
-import { ThreeComponent, ThreeObjectComponent, ThreeSceneComponent } from "./base";
+import { ObjectComponent } from "../mixins";
 
 @Component
-export class Grid extends Mixins(
-  ThreeComponent,
-  ThreeSceneComponent,
-  ThreeObjectComponent
-) {
+export class Grid extends Mixins(ObjectComponent) {
   @Prop({ type: String, default: "" })
   private name!: string;
 
@@ -29,7 +25,8 @@ export class Grid extends Mixins(
   }
 
   public async created() {
-    if (!this.scene && !this.object) {
+    const scene = this.scene() ? this.scene()!.get() : undefined;
+    if (!scene && !this.object()) {
       throw new Error(
         "Grid component can only be added as child to an object or mesh component"
       );
@@ -38,15 +35,16 @@ export class Grid extends Mixins(
     this.m_grid = new THREE.GridHelper(this.size, this.divisions);
     this.m_grid.name = this.name;
 
-    const parent = this.object ? this.object() : this.scene();
-    parent.add(this.m_grid);
+    const parent = this.object ? this.object() : scene;
+    parent!.add(this.m_grid);
 
     this.m_created = true;
   }
 
-  public beforeDestroy() {
-    const parent = this.object ? this.object() : this.scene();
-    parent.remove(this.m_grid);
+  public destroyed() {
+    const scene = this.scene() ? this.scene()!.get() : undefined;
+    const parent = this.object ? this.object() : scene;
+    parent!.remove(this.m_grid);
   }
 
   public render(h: any) {
