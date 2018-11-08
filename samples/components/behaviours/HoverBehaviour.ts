@@ -18,13 +18,13 @@ export class HoverBehaviour extends Mixins(BehaviourComponent) {
 
   public created() {
     // access app
-    const app = this.app();
+    const app = this.app;
 
     // access scene if behaviour is placed in a scene
-    const scene = this.scene();
+    const scene = this.scene;
 
     // access object if behaviour is placed in an object
-    const object = this.object!();
+    const object = this.object;
 
     this.m_originalY = this.position.y;
 
@@ -43,7 +43,7 @@ export class HoverBehaviour extends Mixins(BehaviourComponent) {
     }
   }
 
-  public beforeDestroy() {
+  public destroyed() {
     // dispose everything that needs to be disposed here
   }
 

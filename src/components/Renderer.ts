@@ -53,7 +53,7 @@ export class Renderer extends Mixins(AppComponent) {
     Renderer.id++;
     this.m_name = "" + Renderer.id;
 
-    this.m_renderer = this.app().renderers.create(this.m_name);
+    this.m_renderer = this.app.renderers.create(this.m_name);
     this.m_renderer.set(renderer);
     this.m_renderer.render = () => {
       renderer.clearColor();
@@ -91,7 +91,7 @@ export class Renderer extends Mixins(AppComponent) {
 
   public destroyed() {
     window.removeEventListener("resize", this.handleResize);
-    this.app().renderers.dispose(this.m_name);
+    this.app.renderers.dispose(this.m_name);
   }
 
   public render(h: CreateElement) {

@@ -1,11 +1,11 @@
 import * as THREE from "three";
-import { Component, Mixins, Prop, Provide } from "vue-property-decorator";
+import { Component, Mixins, Prop } from "vue-property-decorator";
 
-import { GeometryType, MaterialType, ModelType } from "../core";
-import { ObjectComponent } from "../mixins";
+import { Application, GeometryType, MaterialType, ModelType } from "../core";
+import { Entity } from "./Entity";
 
 @Component
-export class Mesh extends Mixins(ObjectComponent) {
+export class Mesh extends Mixins(Entity) {
   @Prop({ type: String, default: "" })
   private name!: string;
 
@@ -18,24 +18,7 @@ export class Mesh extends Mixins(ObjectComponent) {
   @Prop({ type: String })
   private model!: string;
 
-  @Provide("object")
-  private provideObject = this.getObject;
-
-  private m_mesh!: THREE.Object3D;
-  private m_created = false;
-
-  public getObject(): THREE.Object3D {
-    return this.m_mesh;
-  }
-
-  public async created() {
-    const scene = this.scene() ? this.scene()!.get() : undefined;
-    if (!scene && !this.object()) {
-      throw new Error(
-        "Mesh component could not be created: can only be added as child to an object or mesh component"
-      );
-    }
-
+  protected async instantiate(app: Application) {
     const hasGeomAndMat: boolean = !!(this.geometry && this.material);
     if (!hasGeomAndMat && !this.model) {
       throw new Error(`
@@ -43,35 +26,20 @@ export class Mesh extends Mixins(ObjectComponent) {
       `);
     }
 
+    let mesh;
     if (this.model) {
-      this.m_mesh = await this.createMeshFromModel();
+      mesh = await this.createMeshFromModel();
     } else {
-      this.m_mesh = await this.createMeshFromGeomAndMat();
+      mesh = await this.createMeshFromGeomAndMat();
     }
 
-    this.m_mesh.name = this.name;
+    mesh.name = this.name;
 
-    const parent = this.object ? this.object() : scene;
-    parent!.add(this.m_mesh);
-
-    this.m_created = true;
-  }
-
-  public destroyed() {
-    const scene = this.scene() ? this.scene()!.get() : undefined;
-    const parent = this.object ? this.object() : scene;
-    parent!.remove(this.m_mesh);
-  }
-
-  public render(h: any) {
-    if (!this.m_created) {
-      return null;
-    }
-    return h("div", this.$slots.default);
+    return mesh;
   }
 
   private async createMeshFromModel() {
-    const app = this.app();
+    const app = this.app;
     const model = await app.assets.models.get(this.model);
     if (!model) {
       throw new Error(`
@@ -84,8 +52,8 @@ export class Mesh extends Mixins(ObjectComponent) {
   }
 
   private async createMeshFromGeomAndMat() {
-    const promMat = this.app().assets.materials.get(this.material);
-    const promGeom = this.app().assets.geometries.get(this.geometry);
+    const promMat = this.app.assets.materials.get(this.material);
+    const promGeom = this.app.assets.geometries.get(this.geometry);
 
     if (!promMat) {
       throw new Error(

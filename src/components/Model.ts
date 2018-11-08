@@ -21,7 +21,7 @@ export class Model extends Mixins(AssetComponent) {
   private m_model!: Promise<ModelType>;
 
   public async created() {
-    const app = this.app();
+    const app = this.app;
     if (!this.factory && !this.src) {
       throw new Error(
         `Model "${
@@ -47,7 +47,7 @@ export class Model extends Mixins(AssetComponent) {
     if (this.bundle()) {
       this.bundle()!.unregisterAsset(this.name);
     }
-    this.app().assets.models.dispose(this.name);
+    this.app.assets.models.dispose(this.name);
   }
 
   public render(h: any) {
@@ -75,7 +75,7 @@ export class Model extends Mixins(AssetComponent) {
   private getMaterialPromises(pMaterials: string | string[]) {
     const promises: Array<Promise<AssetType>> = [];
     const materials = stringToArray(",", pMaterials);
-    const app = this.app();
+    const app = this.app;
 
     materials.forEach(materialName => {
       const prom = app.assets.materials.get(materialName);

@@ -17,7 +17,7 @@ export class Texture extends Mixins(AssetComponent) {
   private m_texture!: Promise<TextureType>;
 
   public created() {
-    const app = this.app();
+    const app = this.app;
     if (this.factory) {
       this.m_texture = this.factory(app);
     } else if (this.src) {
@@ -40,7 +40,7 @@ export class Texture extends Mixins(AssetComponent) {
     if (this.bundle()) {
       this.bundle()!.unregisterAsset(this.name);
     }
-    this.app().assets.textures.dispose(this.name);
+    this.app.assets.textures.dispose(this.name);
   }
 
   public render(h: any) {

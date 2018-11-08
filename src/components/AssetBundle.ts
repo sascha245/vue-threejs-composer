@@ -26,7 +26,7 @@ export class AssetBundle extends Mixins(AppComponent) {
   private m_bundle!: BundleHandle;
 
   public mounted() {
-    this.m_bundle = this.app().assets.bundles.create(this.name);
+    this.m_bundle = this.app.assets.bundles.create(this.name);
     this.m_bundle.onLoad.on(this.onLoad);
     this.m_bundle.onUnload.on(this.onUnload);
 
@@ -34,7 +34,7 @@ export class AssetBundle extends Mixins(AppComponent) {
   }
 
   public destroyed() {
-    this.app().assets.bundles.dispose(this.name);
+    this.app.assets.bundles.dispose(this.name);
   }
 
   public render(h: any) {
@@ -62,7 +62,7 @@ export class AssetBundle extends Mixins(AppComponent) {
   private getBundles(pDependencies: string | string[]): BundleHandle[] {
     const bundles: BundleHandle[] = [];
     const dependencies = stringToArray(",", pDependencies);
-    const app = this.app();
+    const app = this.app;
 
     dependencies.forEach(name => {
       const bundle = app.assets.bundles.get(name);

@@ -2,24 +2,22 @@ import { CreateElement } from "vue";
 import { Component, Prop, Provide, Vue, Watch } from "vue-property-decorator";
 
 import { Application } from "../core";
+import { Provider } from "../utils/provider";
 
 @Component
 export class Three extends Vue {
   @Prop({ default: true, type: Boolean })
   public active!: boolean;
 
-  @Provide("app")
-  public provideApp = this.getApp;
+  @Provide()
+  public app = Provider.defaultValue<Application>();
 
   private m_ready = false;
   private m_app!: Application;
 
-  public getApp() {
-    return this.m_app;
-  }
-
   public mounted() {
     this.m_app = new Application();
+    Provider.setValue<Application>(this.app, this.m_app);
     this.onChangeActive();
     this.m_ready = true;
   }

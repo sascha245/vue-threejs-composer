@@ -9,7 +9,7 @@ interface BehaviourMethods {
 @Component
 export class BehaviourComponent extends Mixins(ObjectComponent) {
   public ready() {
-    const app = this.app();
+    const app = this.app;
     const component = this as BehaviourMethods;
     if (component.update) {
       app.onUpdate.on(component.update);
@@ -17,7 +17,7 @@ export class BehaviourComponent extends Mixins(ObjectComponent) {
   }
 
   public beforeDestroy() {
-    const app = this.app();
+    const app = this.app;
     const component = this as BehaviourMethods;
     if (component.update) {
       app.onUpdate.off(component.update);
