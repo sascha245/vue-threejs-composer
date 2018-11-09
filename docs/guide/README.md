@@ -1,6 +1,5 @@
-# vue-threejs-composer
+# Guide
 
-Build beautiful and interactive scenes in the easy way.
 
 ## What?
 
@@ -31,7 +30,6 @@ But rather than speaking about what this library doesn’t handle, here the main
 
 4. You write your THREE.js objects, we manage them for you: Practically all objects are customizable and accept factory functions.
 
-
 ## Installation
 
 Install THREE.js:
@@ -55,19 +53,3 @@ Launch development server
 `npm run serve`
 
 Play around with the files in */samples*. The demo scene is situated at */samples/views/Demo.vue*
-
-
-## Documentation
-
-The writing of the documentation is still in progress.
-Here however the link to the official documentation: [vue-threejs-composer.netlify.com](https://vue-threejs-composer.netlify.com/)
-
-If you can't find what you are looking for in the documentation, you can also open a new ticket describing your issue.
-
-## License
-
-This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) for details
-
-## Acknowledgments
-
-- Inspired in some ways by [vue-gl](https://github.com/vue-gl/vue-gl)
