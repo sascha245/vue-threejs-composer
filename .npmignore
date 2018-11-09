@@ -6,6 +6,7 @@
 /build/tests
 /src
 /tests
+README.md
 
 .prettierignore
 .editorconfig
