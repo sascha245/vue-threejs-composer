@@ -1,4 +1,4 @@
-import { PCFSoftShadowMap, WebGLRenderer } from "three";
+import { Camera, Color, PCFSoftShadowMap, Scene, WebGLRenderer } from "three";
 import { CreateElement } from "vue";
 import { Component, Mixins, Prop, Watch } from "vue-property-decorator";
 
@@ -25,50 +25,65 @@ export class Renderer extends Mixins(AppComponent) {
   @Prop({ default: true, type: Boolean })
   public stencil!: boolean;
 
-  @Prop({ default: 0x000000, type: Number })
-  public clearColor!: number;
+  @Prop({ default: 0xffffff, type: [Number, String] })
+  public clearColor!: number | string;
 
   @Watch("camera")
   private watchCamera() {
-    this.m_renderer.setCamera(this.camera);
+    this.m_handler.setCamera(this.camera);
   }
   @Watch("scene")
   private watchScene() {
-    this.m_renderer.setScene(this.scene);
+    this.m_handler.setScene(this.scene);
+  }
+  @Watch("clearColor")
+  private watchClearColor() {
+    const color = new Color(this.clearColor as any);
+    this.m_renderer.setClearColor(color);
   }
 
   private m_ready = false;
-  private m_renderer!: RendererHandle;
+  private m_handler!: RendererHandle;
+  private m_renderer!: WebGLRenderer;
   private m_name!: string;
   private static id = 0;
 
-  public async created() {
+  protected renderImpl(
+    renderer: WebGLRenderer,
+    scene?: Scene,
+    camera?: Camera
+  ) {
+    renderer.clearColor();
+    if (scene && camera) {
+      renderer.render(scene, camera);
+    }
+  }
+
+  private async created() {
     const renderer = new WebGLRenderer({
       antialias: this.antialias,
       canvas: this.canvas,
-      clearColor: this.clearColor,
       stencil: this.stencil
     });
+    this.m_renderer = renderer;
 
     Renderer.id++;
     this.m_name = "" + Renderer.id;
 
-    this.m_renderer = this.app().renderers.create(this.m_name);
-    this.m_renderer.set(renderer);
-    this.m_renderer.render = () => {
-      renderer.clearColor();
-      const scene = this.m_renderer.scene
-        ? this.m_renderer.scene.get()
+    this.m_handler = this.app.renderers.create(this.m_name);
+    this.m_handler.set(renderer);
+    this.m_handler.render = () => {
+      const scene = this.m_handler.scene
+        ? this.m_handler.scene.get()
         : undefined;
-      const camera = this.m_renderer.camera
-        ? this.m_renderer.camera.get()
+      const camera = this.m_handler.camera
+        ? this.m_handler.camera.get()
         : undefined;
-      if (scene && camera) {
-        renderer.render(scene, camera);
-      }
+      this.renderImpl(renderer, scene, camera);
     };
-    this.m_renderer.use();
+    this.m_handler.use();
 
+    this.watchClearColor();
     this.watchCamera();
     this.watchScene();
 
@@ -83,18 +98,18 @@ export class Renderer extends Mixins(AppComponent) {
   }
 
   private handleResize() {
-    const renderer = this.m_renderer.get()!;
+    const renderer = this.m_handler.get()!;
     const width = renderer.domElement.scrollWidth;
     const height = renderer.domElement.scrollHeight;
     renderer.setSize(width, height);
   }
 
-  public destroyed() {
+  private destroyed() {
     window.removeEventListener("resize", this.handleResize);
-    this.app().renderers.dispose(this.m_name);
+    this.app.renderers.dispose(this.m_name);
   }
 
-  public render(h: CreateElement) {
+  private render(h: CreateElement) {
     if (!this.m_ready) {
       return null;
     }

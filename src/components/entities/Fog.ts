@@ -1,7 +1,7 @@
 import { Color, Fog as ThreeFog, FogExp2 as ThreeFogExp2, IFog } from "three";
 import { Component, Mixins, Prop, Watch } from "vue-property-decorator";
 
-import { SceneComponent } from "../mixins";
+import { SceneComponent } from "../../mixins";
 
 @Component
 export class Fog extends Mixins(SceneComponent) {
@@ -28,7 +28,7 @@ export class Fog extends Mixins(SceneComponent) {
 
   @Watch("exp2")
   public watchExp() {
-    const scene = this.scene() ? this.scene()!.get() : undefined;
+    const scene = this.scene ? this.scene!.get() : undefined;
     if (this.exp2) {
       this.m_fog = new ThreeFogExp2(this.color, this.density);
     } else {
@@ -59,7 +59,7 @@ export class Fog extends Mixins(SceneComponent) {
   private m_fog!: IFog;
 
   public created() {
-    const scene = this.scene() ? this.scene()!.get() : undefined;
+    const scene = this.scene ? this.scene!.get() : undefined;
     if (!scene) {
       throw new Error(
         "Fog component can only be added as a child to a scene component"
@@ -78,7 +78,7 @@ export class Fog extends Mixins(SceneComponent) {
   }
 
   public destroyed() {
-    const scene = this.scene() ? this.scene()!.get() : undefined;
+    const scene = this.scene ? this.scene!.get() : undefined;
     scene!.fog = null;
   }
 

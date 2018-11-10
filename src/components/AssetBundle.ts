@@ -2,6 +2,7 @@ import { Component, Mixins, Prop, Provide, Vue } from "vue-property-decorator";
 
 import { BundleHandle } from "../core";
 import { AppComponent } from "../mixins";
+import { Provider } from "../utils/provider";
 import { stringToArray } from "../utils/toArray";
 
 @Component
@@ -16,7 +17,7 @@ export class AssetBundle extends Mixins(AppComponent) {
   public dependencies!: string | string[];
 
   @Provide("bundle")
-  private provideBundle = this.getBundle;
+  private provideBundle = Provider.defaultValue<BundleHandle>();
 
   private getBundle() {
     return this.m_bundle;
@@ -26,15 +27,16 @@ export class AssetBundle extends Mixins(AppComponent) {
   private m_bundle!: BundleHandle;
 
   public mounted() {
-    this.m_bundle = this.app().assets.bundles.create(this.name);
+    this.m_bundle = this.app.assets.bundles.create(this.name);
     this.m_bundle.onLoad.on(this.onLoad);
     this.m_bundle.onUnload.on(this.onUnload);
-
     this.m_bundle.preload = this.preload;
+
+    Provider.setValue(this.provideBundle, this.m_bundle);
   }
 
   public destroyed() {
-    this.app().assets.bundles.dispose(this.name);
+    this.app.assets.bundles.dispose(this.name);
   }
 
   public render(h: any) {
@@ -62,7 +64,7 @@ export class AssetBundle extends Mixins(AppComponent) {
   private getBundles(pDependencies: string | string[]): BundleHandle[] {
     const bundles: BundleHandle[] = [];
     const dependencies = stringToArray(",", pDependencies);
-    const app = this.app();
+    const app = this.app;
 
     dependencies.forEach(name => {
       const bundle = app.assets.bundles.get(name);

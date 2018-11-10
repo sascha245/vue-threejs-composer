@@ -1,11 +1,14 @@
 import { Component, Inject, Vue } from "vue-property-decorator";
 
 import { Application } from "../core";
-
-export type AppGetter = () => Application;
+import { ProviderValue } from "../utils/provider";
 
 @Component
 export class AppComponent extends Vue {
-  @Inject()
-  protected app!: AppGetter;
+  @Inject("app")
+  private injectedApp!: ProviderValue<Application>;
+
+  protected get app() {
+    return this.injectedApp.value!;
+  }
 }

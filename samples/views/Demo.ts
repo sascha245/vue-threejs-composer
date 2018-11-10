@@ -1,18 +1,20 @@
 // import THREE.FBXLoader
-import "../FbxLoader";
-
+// import "../loaders/FBXLoader";
 import * as THREE from "three";
+import FBXLoader from "three-fbxloader-offical";
 import { Component, Vue } from "vue-property-decorator";
 
 import { CameraFactory, components, LightFactory, Loader } from "../../src";
 import { HoverBehaviour } from "../components/behaviours/HoverBehaviour";
 import { OrbitBehaviour } from "../components/behaviours/OrbitBehaviour";
-import StandardMaterial from "../components/materials/StandardMaterial";
+import { StandardMaterial } from "../components/materials/StandardMaterial";
 import Crate from "../components/prefabs/Crate";
 import { cubeFactory, planeFactory } from "../factories/geometries";
 
 // tell our model loader to use FBXLoader for .fbx extensions
-Loader.registerExtension("fbx", THREE.FBXLoader);
+Loader.registerExtension("fbx", FBXLoader);
+
+(window as any).THREE = THREE;
 
 @Component({
   components: {
@@ -83,6 +85,10 @@ export default class Demo extends Vue {
     this.isLoading = false;
     console.log("finish loading");
   }
+  public startUnloading() {
+    console.log("start unloading");
+  }
+
   public loadingProgress(amount: number, total: number) {
     this.loadingAmount = amount;
     this.loadingTotal = total;
@@ -90,6 +96,7 @@ export default class Demo extends Vue {
   }
 
   public changeScene(pName: string) {
+    console.log("change active scene", pName);
     this.activeScene = pName;
   }
 

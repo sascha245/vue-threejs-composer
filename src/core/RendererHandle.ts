@@ -9,6 +9,10 @@ import { SceneHandle } from "./SceneHandle";
 type OnChangeScene = (name: string, scene?: SceneHandle) => Promise<void>;
 type OnChangeCamera = (name: string, camera?: CameraHandle) => Promise<void>;
 
+interface DisposableRenderer {
+  dispose?: () => void;
+}
+
 export class RendererHandle extends Handle {
   private _app: Application;
 
@@ -75,15 +79,21 @@ export class RendererHandle extends Handle {
   }
 
   protected load() {
-    const p = super.load();
     this._app.scenes.watch(this.watchScenes);
-    return p.then(() => this._changeQueue);
+    return super.load().then(() => {
+      return this._changeQueue;
+    });
   }
 
   protected unload() {
-    const p = super.unload();
     this._app.scenes.unwatch(this.watchScenes);
-    return p.then(() => this._changeQueue);
+    return super.unload().then(() => {
+      const value = this.get() as DisposableRenderer | undefined;
+      if (value && value.dispose) {
+        value.dispose();
+      }
+      return this._changeQueue;
+    });
   }
 
   private updateScene(scene?: SceneHandle): Promise<void> {

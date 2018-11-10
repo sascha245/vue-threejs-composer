@@ -1,6 +1,6 @@
 {
   "name": "vue-threejs-composer",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "main": "build/src/index.js",
   "typings": "build/src/index.d.ts",
   "repository": "https://github.com/sascha245/vue-threejs-composer",
@@ -37,6 +37,7 @@
     "lint-staged": "^7.2.2",
     "rimraf": "^2.6.2",
     "three": "^0.97.0",
+    "three-fbxloader-offical": "^1.0.0",
     "ts-jest": "^23.0.0",
     "tslint-config-prettier": "^1.15.0",
     "typescript": "^3.0.0",

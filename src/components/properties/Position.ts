@@ -12,11 +12,11 @@ export class Position extends Mixins(ObjectComponent) {
 
   @Watch("value", { deep: true })
   private onChange() {
-    this.object()!.position.set(this.value.x, this.value.y, this.value.z);
+    this.object!.position.set(this.value.x, this.value.y, this.value.z);
   }
 
   public created() {
-    if (!this.object()) {
+    if (!this.object) {
       throw new Error(
         "Position property can only be added as child to an object component"
       );
