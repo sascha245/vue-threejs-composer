@@ -1,7 +1,7 @@
 import * as THREE from "three";
 import { Component, Mixins, Prop, Provide } from "vue-property-decorator";
 
-import { ObjectComponent } from "../mixins";
+import { ObjectComponent } from "../../mixins";
 import { Entity } from "./Entity";
 
 @Component

@@ -1,14 +1,18 @@
-import { Component, Inject, Mixins, Vue } from "vue-property-decorator";
+import { Component, Inject, Mixins } from "vue-property-decorator";
 
 import { BundleHandle } from "../core";
+import { Provider, ProviderValue } from "../utils/provider";
 import { AppComponent } from "./AppComponent";
-
-export type BundleGetter = () => BundleHandle | undefined;
-
-const BundleDefaultGetter = () => undefined;
 
 @Component
 export class AssetComponent extends Mixins(AppComponent) {
-  @Inject({ default: BundleDefaultGetter })
-  protected bundle!: BundleGetter;
+  @Inject({
+    from: "bundle",
+    default: Provider.defaultValue<BundleHandle>()
+  })
+  private injectedBundle!: ProviderValue<BundleHandle>;
+
+  protected get bundle() {
+    return this.injectedBundle.value;
+  }
 }

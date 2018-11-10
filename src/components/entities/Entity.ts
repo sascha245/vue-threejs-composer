@@ -1,14 +1,14 @@
-import { Camera, Object3D } from "three";
+import { Object3D } from "three";
 import { Component, Mixins, Provide } from "vue-property-decorator";
 
-import { Application } from "../core";
-import { ObjectComponent, ObjectType } from "../mixins";
-import { Provider } from "../utils/provider";
+import { Application } from "../../core";
+import { ObjectComponent, ObjectType } from "../../mixins";
+import { Provider } from "../../utils/provider";
 
 @Component
 export class Entity extends Mixins(ObjectComponent) {
   @Provide("object")
-  public provideObject = Provider.defaultValue<ObjectType>();
+  private provideObject = Provider.defaultValue<ObjectType>();
 
   private m_object!: ObjectType;
   private m_created = false;

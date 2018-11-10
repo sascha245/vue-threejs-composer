@@ -1,6 +1,6 @@
 import { Component, Mixins, Prop } from "vue-property-decorator";
 
-import { Application, LightFactory } from "../core";
+import { Application, LightFactory } from "../../core";
 import { Entity } from "./Entity";
 
 @Component

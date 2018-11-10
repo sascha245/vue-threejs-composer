@@ -47,7 +47,7 @@
           <standard-material name="waterMat" color="#9c9cff"/>
         </asset-bundle>
 
-        <scene name="scene1" assets="PolygonMini, Water, Crate" @load="startLoading" @load-progress="loadingProgress" @loaded="finishLoading">
+        <scene name="scene1" assets="PolygonMini, Water, Crate" @load="startLoading" @load-progress="loadingProgress" @loaded="finishLoading" @unload="startUnloading">
 
           <fog exp2/>
 

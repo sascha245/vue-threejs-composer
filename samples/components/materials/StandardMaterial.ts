@@ -1,19 +1,12 @@
 import { MeshStandardMaterial, Texture } from "three";
-import { Component, Prop, Vue } from "vue-property-decorator";
+import { Component, Mixins, Prop } from "vue-property-decorator";
 
-import { Application, components } from "../../../src";
+import { components, MaterialType } from "../../../src";
 
 const { Material } = components;
 
-@Component({
-  components: {
-    Material
-  }
-})
-export default class StandardMaterial extends Vue {
-  @Prop({ required: true, type: String })
-  public name!: string;
-
+@Component
+export class StandardMaterial extends Mixins(Material) {
   @Prop({ type: String })
   public map!: string;
 
@@ -23,10 +16,10 @@ export default class StandardMaterial extends Vue {
   @Prop({ type: Number, default: 0.01 })
   public metalness!: number;
 
-  public async factory(app: Application) {
+  protected async instantiate(): Promise<MaterialType> {
     let texture;
     if (this.map) {
-      texture = await app.assets.textures.get(this.map);
+      texture = await this.app.assets.textures.get(this.map);
     }
 
     const mat = new MeshStandardMaterial({

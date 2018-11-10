@@ -1,7 +1,7 @@
 import * as THREE from "three";
 import { Component, Mixins, Prop } from "vue-property-decorator";
 
-import { Application, GeometryType, MaterialType, ModelType } from "../core";
+import { Application, GeometryType, MaterialType, ModelType } from "../../core";
 import { Entity } from "./Entity";
 
 @Component
@@ -48,7 +48,8 @@ export class Mesh extends Mixins(Entity) {
         }"
       `);
     }
-    return (model as ModelType).clone();
+    return this.cloneFbx(model);
+    // return (model as ModelType).clone();
   }
 
   private async createMeshFromGeomAndMat() {
@@ -72,5 +73,67 @@ export class Mesh extends Mixins(Entity) {
     const [material, geometry] = await Promise.all([promMat, promGeom]);
 
     return new THREE.Mesh(geometry as GeometryType, material as MaterialType);
+  }
+
+  public cloneFbx(fbx: any) {
+    const clone = fbx.clone(true);
+    clone.animations = fbx.animations;
+    clone.skeleton = { bones: [] };
+
+    const skinnedMeshes: {
+      [name: string]: any;
+    } = {};
+
+    fbx.traverse((node: any) => {
+      if (node.isSkinnedMesh) {
+        skinnedMeshes[node.name] = node;
+      }
+    });
+
+    const cloneBones: {
+      [name: string]: any;
+    } = {};
+    const cloneSkinnedMeshes: {
+      [name: string]: any;
+    } = {};
+
+    clone.traverse((node: any) => {
+      if (node.isBone) {
+        cloneBones[node.name] = node;
+      }
+
+      if (node.isSkinnedMesh) {
+        cloneSkinnedMeshes[node.name] = node;
+      }
+    });
+
+    for (const name in skinnedMeshes) {
+      if (!skinnedMeshes.hasOwnProperty(name)) {
+        continue;
+      }
+
+      const skinnedMesh = skinnedMeshes[name];
+      const skeleton = skinnedMesh.skeleton;
+      const cloneSkinnedMesh = cloneSkinnedMeshes[name];
+
+      const orderedCloneBones = [];
+
+      const bonesLength = skeleton.bones.length;
+      for (let i = 0; i < bonesLength; i++) {
+        const cloneBone = cloneBones[skeleton.bones[i].name];
+        orderedCloneBones.push(cloneBone);
+      }
+
+      cloneSkinnedMesh.bind(
+        new THREE.Skeleton(orderedCloneBones, skeleton.boneInverses),
+        cloneSkinnedMesh.matrixWorld
+      );
+
+      // For animation to work correctly:
+      clone.skeleton.bones.push(cloneSkinnedMesh);
+      clone.skeleton.bones.push(...orderedCloneBones);
+    }
+
+    return clone;
   }
 }

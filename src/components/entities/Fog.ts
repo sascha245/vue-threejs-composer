@@ -1,7 +1,7 @@
 import { Color, Fog as ThreeFog, FogExp2 as ThreeFogExp2, IFog } from "three";
 import { Component, Mixins, Prop, Watch } from "vue-property-decorator";
 
-import { SceneComponent } from "../mixins";
+import { SceneComponent } from "../../mixins";
 
 @Component
 export class Fog extends Mixins(SceneComponent) {

@@ -1,6 +1,6 @@
 import { Component, Mixins, Prop } from "vue-property-decorator";
 
-import { Application, CameraFactory, CameraHandle } from "../core";
+import { Application, CameraFactory, CameraHandle } from "../../core";
 import { Entity } from "./Entity";
 
 @Component

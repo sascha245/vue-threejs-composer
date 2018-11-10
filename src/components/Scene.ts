@@ -36,6 +36,7 @@ export class Scene extends Mixins(AppComponent) {
     this.$emit("loaded");
   }
   public async onUnload() {
+    this.$emit("unload");
     this.m_active = false;
     await Vue.nextTick();
     this.m_scene.set(undefined);
