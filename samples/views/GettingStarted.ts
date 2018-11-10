@@ -1,7 +1,11 @@
 import * as THREE from "three";
+import FBXLoader from "three-fbxloader-offical";
 import { Component, Vue } from "vue-property-decorator";
 
-import { Application, components } from "../../src";
+import { Application, components, Loader } from "../../src";
+
+// tell our model loader to use FBXLoader for .fbx extensions
+Loader.registerExtension("fbx", FBXLoader);
 
 @Component({
   components: {

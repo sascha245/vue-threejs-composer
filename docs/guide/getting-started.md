@@ -47,7 +47,7 @@ Now let's add a few assets we can use in our scenes. For that, we will use asset
 ...
 <Three v-if="canvas">
 
-  <AssetBundle name="cube">
+  <AssetBundle name="cube" preload>
     <Material name="cube_Mat" :factory="cubeMaterialFactory"/>
     <Geometry name="cube_Geom" :factory="cubeGeometryFactory"/>
   </AssetBundle>
@@ -92,7 +92,7 @@ Now that we created our assets, let's setup our scene:
 ...
 <Three v-if="canvas">
 
-  <AssetBundle name="cube">
+  <AssetBundle name="cube" preload>
     <Material name="cube_Mat" :factory="cubeMaterialFactory"/>
     <Geometry name="cube_Geom" :factory="cubeGeometryFactory"/>
   </AssetBundle>
@@ -220,3 +220,66 @@ That's it! Now you should see a cube with our texture.
 
 ![WebGl Cube with texture](/webgl-cube-texture.png)
 
+
+## Models
+
+Loading models involves a few more steps as for the textures above, but still stays relatively simple.
+Here the steps to follow:
+1. Register the extension with the appropriate loader
+2. Load your model
+3. Create a material to use by the model
+
+Let's start by importing the FBXLoader:
+
+```js
+import FBXLoader from "three-fbxloader-offical";
+import { Loader } from 'vue-threejs-composer'
+
+Loader.register('fbx', FbxLoader);
+```
+
+You can use the package [three-fbxloader-offical](https://www.npmjs.com/package/three-fbxloader-offical) to include the FBXLoader. The spelling may be wrong but the package works fine.
+
+**Note**: If you are using Typescript, you need to add a declaration file for this module:
+```ts
+// three-fbxloader-offical.d.ts
+declare module "three-fbxloader-offical";
+```
+
+You can then load models with the *fbx* extension. If you wish to handle other extensions, you will also need to register those.
+
+Now let's add a new asset bundle for our model, update the bundles used in our scene component and add a new mesh.
+
+```html
+...
+<AssetBundle name="mixamo" preload>
+  <Model name="Mixamo_YBot" src="/assets/models/ybot.fbx"/>
+</AssetBundle>
+...
+
+<Scene name="scene1" assets="cube, mixamo">
+  ...
+
+  <Mesh name="ybot" model="Mixamo_YBot">
+    <Position :value="{ x: 0, y: 0.5, z: 0 }"/>
+    <Scale :value="{ x: 0.01, y: 0.01, z: 0.01}"/>
+    <Shadows cast receive deep/>
+  </Mesh>
+
+</Scene>
+```
+
+With that, we should see a mixamo bot above our cube:
+
+![WebGl Mixamo Bot](/webgl-mixamo-bot.png)
+
+### Assigning materials to a model
+
+If you want to override the materials used by the model by specifying the *materials* property.
+You can also specify multiple materials separated by a comma, if the model has multiple meshes.
+
+```html
+<Model name="Mixamo_YBot" src="/assets/models/ybot.fbx" materials="myMaterial, mySecondMaterial"/>
+```
+
+**Note**: You have to define your materials before defining the model, or the model will not find the given materials.
