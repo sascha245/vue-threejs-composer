@@ -1,110 +1,98 @@
-<!--
-#### Define custom materials
+# Assets
+
+Assets are an essential part of our application, as they allow us to define our textures, materials, geometries and models.
+
+## Bundles
+
+To better organize and load those assets in our scenes, we put them in named bundles. Those bundles can contain a multitude of assets.
 
 ```html
-<template>
-  <material :factory="factory" :name="name"/>
-</template>
+...
+<Three>
+
+  <AssetBundle name="cube" preload>
+    <Material name="cube_Mat" :factory="cubeMaterialFactory"/>
+    <Geometry name="cube_Geom" :factory="cubeGeometryFactory"/>
+  </AssetBundle>
+
+</Three>
+...
 ```
 
-```ts
-import { MeshStandardMaterial, Texture } from "three";
-import { Component, Prop, Vue } from "vue-property-decorator";
+The library by default only includes basic asset components, like `Material`, `Geometry`, `Texture` and `Model`.
 
-import { Application, components } from "../../../src";
+## Factories
 
-const { Material } = components;
+For each of these components, you can pass them a factory function to tell the component how to create the corresponding asset:
 
-@Component({
-  components: {
-    Material
-  }
-})
-export default class StandardMaterial extends Vue {
-  @Prop({ required: true, type: String })
-  public name!: string;
+```js
+import * as THREE from 'three'
+...
 
-  @Prop({ type: String })
-  public map!: string;
-
-  @Prop({ type: String, default: "#ffffff" })
-  public color!: string;
-
-  @Prop({ type: Number, default: 0.01 })
-  public metalness!: number;
-
-  public async factory(app: Application) {
-    let texture;
-    if (this.map) {
-      texture = await app.assets.textures.get(this.map);
+export default {
+  ...
+  methods: {
+    // you always need to return Promises from factory functions
+    async cubeMaterialFactory(app: Application) {
+      return new THREE.MeshStandardMaterial({
+        color: "#DDDDDD",
+        metalness: 0.01
+      });
+    },
+    async cubeGeometryFactory(app: Application) {
+      return new THREE.BoxBufferGeometry(1, 1, 1);
     }
+  },
+  ...
+}
+```
 
-    const mat = new MeshStandardMaterial({
-      color: this.color,
-      metalness: this.metalness
-    });
-    mat.map = texture as Texture;
-    return mat;
+## Extending components
+
+You can also extend those basic asset components to create custom components:
+
+```js
+import * as THREE from 'three'
+import { components } from 'vue-threejs-composer'
+
+export default {
+  name: 'StandardMaterial',
+  mixins: [
+    components.Material
+  ],
+  props: [
+    {
+      name: 'color',
+      default: '#000000',
+      type: String
+    },
+    {
+      name: 'metalness',
+      default: 0.01,
+      type: Number
+    }
+  ],
+  methods: {
+    async instantiate() {
+      return new THREE.MeshStandardMaterial({
+        color: this.color,
+        metalness: this.metalness
+      });
+    }
   }
 }
 ```
 
-**Note**: You can also create custom geometries in a very similar way with factory functions.
+::: tip NOTE
+The same is possible with `Geometry`, `Texture` and `Model`
+:::
 
-#### Define custom behaviours
+## Loader
 
-```ts
-import { Component, Mixins, Prop } from "vue-property-decorator";
+## Dependencies
 
-import { BehaviourComponent } from "vue-threejs-composer";
+## Dynamic assets
 
-@Component
-export class HoverBehaviour extends Mixins(BehaviourComponent) {
-  @Prop({ required: true, type: Object })
-  public position!: { x: number, y: number, z: number };
+## Usage
 
-  @Prop({ type: Number, default: 1 })
-  public distance!: number;
 
-  @Prop({ type: Number, default: 1 })
-  public speed!: number;
-
-  private m_moveUp = true;
-  private m_originalY = 0;
-
-  public created() {
-    // access app
-    const app = this.app();
-    // access scene handler if behaviour is placed in a scene
-    const scene = this.scene();
-    // access object if behaviour is placed in an object
-    const object = this.object();
-
-    this.m_originalY = this.position.y;
-
-    // once your component is ready
-    this.ready();
-  }
-
-  // lifecycle function called on each frame (optional)
-  public update(deltaTime: number) {
-    this.position.y += deltaTime * (this.m_moveUp ? 1 : -1) * this.speed;
-
-    const min = this.m_originalY - this.distance;
-    const max = this.m_originalY + this.distance;
-    if (this.position.y > max) {
-      this.m_moveUp = false;
-    } else if (this.position.y < min) {
-      this.m_moveUp = true;
-    }
-  }
-
-  public destroyed() {
-    // dispose everything that needs to be disposed here
-  }
-
-  public render(h: any) {
-    return h("div");
-  }
-}
-``` -->
