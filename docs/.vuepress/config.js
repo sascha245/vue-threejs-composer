@@ -19,9 +19,11 @@ module.exports = {
           collapsable: false,
           children: [
             ["", "Introduction"],
-            ["getting-started", "Getting started"]
-            // ["assets", "Assets"],
-            // ["objects", "Scene objects"]
+            ["getting-started", "Getting started"],
+            ["assets", "Assets"],
+            ["scenes", "Scenes"],
+            ["objects", "Objects"]
+            // ["behaviours", "Behaviours"]
           ]
         }
       ]

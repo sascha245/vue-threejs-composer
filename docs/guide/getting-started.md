@@ -2,13 +2,74 @@
 
 ## Setup
 
-Let's start out by creating a new component and setting up the base:
+A THREE.js application is composed of multiple parts:
+
+### `<Three>`
+
+The `Three` Component will be the root of our Three.js application.
+Every component of this library or that is extending this library is required to be placed in this component.
+
+### `<Renderer>`
+
+The `Renderer` Component is necessary for your application, as without it, nothing will be rendered in your canvas.
+The renderer component included by default in this library requires multiple properties to work correctly:
+- `canvas`: A canvas element
+- `scene`: The name of the scene to load
+- `camera`: The name of the camera to load
+
+### `<AssetBundle>`
+
+The `AssetBundle` Component groups up your assets in smaller parts. You will declare your assets in these bundles.
+
+All assets in a bundle are loaded when a scene starts loading and the bundle is not already loaded.<br/>
+All assets in a bundle are unloaded when no scene uses the bundle anymore.
+
+This component requires a `name` property.
+
+More information about assets can be found [here](/guide/assets.html)
+
+### `<Scene>`
+
+The `Scene` Component to define the content of our scene.
+
+The components in the scene will only load when:
+- the scene is at least in use by one renderer.
+- all asset bundles marked with `preload` have been completely loaded.
+
+This component requires a `name` property.
+
+More information about scenes can be found [here](/guide/scenes.html)
+
+### `<Camera>`
+
+The `Camera` Component that will be used by the `Renderer` to render the scene. This component needs to be placed in a `Scene` Component.
+This component requires a `name` property.
+
+
+### General layout
+
+
 
 ```html
 <template>
   <div>
     <canvas ref="canvas"/>
     <Three v-if="canvas">
+      <Renderer :canvas="canvas" camera="main" scene="scene1" :clearColor="0xCCCCCC" antialias shadows/>
+
+      <AssetBundle name="myBundle" preload>
+        ...
+      </AssetBundle>
+
+      <Scene name="scene1" assets="myBundle" @load="..." @load-progress="..." @loaded="...">
+
+        <Camera name="main">
+          <Position :value="{x: 0, y: 0, z: 0}"/>
+        </Camera>
+
+        <!-- Declare scene objects -->
+        ...
+      </Scene>
 
     </Three>
   </div>
@@ -29,19 +90,20 @@ export default {
     }
   },
   mounted() {
-    this.canvas = this.$ref.canvas;
+    this.canvas = this.$refs.canvas;
   }
 }
 </script>
 
 ```
-**Note**: The `Three` Component will be the root of our Three.js application.
-Every element handling Three.js assets or objects are required to be placed in this component.
 
 
-## Asset bundles
 
-Now let's add a few assets we can use in our scenes. For that, we will use asset bundles to pack together our assets. You can create as many bundles as you need and also make your bundles depend on other bundles if you wish to.
+
+## Assets
+
+Now let's add a few assets we can use in our scenes.
+
 
 ```html
 ...
@@ -80,22 +142,16 @@ export default {
 </script>
 ```
 
-**Note**: The library will only contain the basic asset components, like `Material` and `Geometry`.
-To see an example of how to create custom implementations on top of it, you can take a look [here](/guide/assets.html).
-
 
 ## Scene
 
-Now that we created our assets, let's setup our scene:
+Now that we created our assets, let's setup our scene with a point light, a cube and a camera pointing towards that cube.
 
 ```html
 ...
 <Three v-if="canvas">
 
-  <AssetBundle name="cube" preload>
-    <Material name="cube_Mat" :factory="cubeMaterialFactory"/>
-    <Geometry name="cube_Geom" :factory="cubeGeometryFactory"/>
-  </AssetBundle>
+  ...
 
   <Scene name="scene1" assets="cube">
 
@@ -120,10 +176,11 @@ Now that we created our assets, let's setup our scene:
 ...
 ```
 
-**Note**: To tell our scene to load our asset bundle, we simply specify the name of the bundle(s) in the *assets* property of `Scene`. To track the loading progress of our scene, you can add the following 3 event listeners:
+**Note**: To tell our scene to load our asset bundle, we simply specify the name of the bundle(s) in the `assets` property of `Scene`. To track the loading progress of our scene, you can add the following 4 event listeners:
 - `@load` when the scene starts loading
 - `@load-progress` each time when the scene finished loading a new asset
 - `@loaded` when the scene finished loading
+- `@unload` when the scene starts unloading
 
 Now let's add the factory functions for our light and camera:
 
@@ -151,27 +208,6 @@ export default {
   ...
 }
 ```
-
-With that, our scene should be setup.
-
-## Renderer
-
-Now we should already see.... a black screen?
-In fact, this is quite normal, as we didn't include yet a very important component: the renderer!
-
-```html
-...
-<Three v-if="canvas">
-  ...
-  <Renderer :canvas="canvas" camera="main" scene="scene1" :clearColor="0xCCCCCC" antialias shadows/>
-  ...
-</Three>
-...
-```
-
-**Note**: Now the renderer will automatically look for a scene with the name *scene1*, as well as the camera the name *main* in it and load them.
-
-You can also add multiple renderers if you wish.
 
 Finally, we can see our cube before us:
 
@@ -203,7 +239,7 @@ Now let's update our `cubeMaterialFactory` function.
 
 ```ts
 ...
-async cubeMaterialFactory(app) {
+async cubeMaterialFactory(app: Application) {
   // Normally, you will throw some error in the case we didn't find the texture.
   const texture = await app.assets.textures.get('crate_Texture');
 
