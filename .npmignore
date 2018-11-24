@@ -1,5 +1,6 @@
 .vscode
 .github
+.rpt2_cache
 /node_modules
 /public
 /samples
@@ -7,7 +8,7 @@
 /src
 /tests
 /docs
-README.md
+
 
 .prettierignore
 .editorconfig

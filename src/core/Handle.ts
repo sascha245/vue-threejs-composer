@@ -10,7 +10,7 @@ export class Handle {
   private _onDeactivate = new EventDispatcher<() => Promise<void>>();
 
   private _unloadTimeout = 0;
-  private _unloadTimeoutHandle: number | null = null;
+  private _unloadTimeoutHandle: any | null = null;
 
   public get queue() {
     return this._queue;

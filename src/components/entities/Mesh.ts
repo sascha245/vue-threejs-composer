@@ -116,7 +116,7 @@ export class Mesh extends Mixins(Entity) {
       const skeleton = skinnedMesh.skeleton;
       const cloneSkinnedMesh = cloneSkinnedMeshes[name];
 
-      const orderedCloneBones = [];
+      const orderedCloneBones: any[] = [];
 
       const bonesLength = skeleton.bones.length;
       for (let i = 0; i < bonesLength; i++) {
