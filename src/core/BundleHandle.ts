@@ -2,7 +2,11 @@ import { AssetType } from "./AssetTypes";
 import { EventDispatcher } from "./EventDispatcher";
 import { Handle } from "./Handle";
 
-interface AssetPair {
+interface AssetSearchOptions {
+  preload?: boolean;
+}
+
+interface Asset {
   name: string;
   value: Promise<AssetType>;
 }
@@ -24,7 +28,7 @@ export class BundleHandle extends Handle {
     return this._onLoadProgress;
   }
   public get preload() {
-    return this.preload;
+    return this._preload;
   }
   public set preload(val: boolean) {
     this._preload = val;
@@ -70,12 +74,20 @@ export class BundleHandle extends Handle {
    * Count total number of assets across all given bundle and all their dependencies
    * @param bundles
    */
-  public static countAssets(bundles: BundleHandle[]): number {
+  public static countAssets(
+    bundles: BundleHandle[],
+    options: AssetSearchOptions = {
+      preload: false
+    }
+  ): number {
     const countMap = new Map<BundleHandle, number>();
     bundles.forEach(bundle => this.recursiveCountAssets(countMap, bundle));
 
     let total = 0;
-    countMap.forEach(amount => {
+    countMap.forEach((amount, bundle) => {
+      if (options.preload && !bundle.preload) {
+        return;
+      }
       total += amount;
     });
     return total;
@@ -83,20 +95,28 @@ export class BundleHandle extends Handle {
   /**
    * Count total number of assets across this bundle and all dependencies
    */
-  public countAssets() {
-    return BundleHandle.countAssets([this]);
+  public countAssets(options?: AssetSearchOptions) {
+    return BundleHandle.countAssets([this], options);
   }
 
   /**
    * List of all assets across all given bundles and all their dependencies
    * @param bundles
    */
-  public static listAssets(bundles: BundleHandle[]): AssetPair[] {
+  public static listAssets(
+    bundles: BundleHandle[],
+    options: AssetSearchOptions = {
+      preload: false
+    }
+  ): Asset[] {
     const map: SearchAssetMap = new Map();
     bundles.forEach(bundle => this.recursiveListAssets(map, bundle));
 
-    const arr: AssetPair[] = [];
-    map.forEach(assetMap => {
+    const arr: Asset[] = [];
+    map.forEach((assetMap, bundle) => {
+      if (options.preload && !bundle.preload) {
+        return;
+      }
       assetMap.forEach((value, name) => {
         arr.push({
           name,
@@ -109,8 +129,8 @@ export class BundleHandle extends Handle {
   /**
    * List of all assets across this bundle and all dependencies
    */
-  public listAssets() {
-    return BundleHandle.listAssets([this]);
+  public listAssets(options?: AssetSearchOptions) {
+    return BundleHandle.listAssets([this], options);
   }
 
   protected load() {
@@ -140,7 +160,9 @@ export class BundleHandle extends Handle {
   }
 
   private awaitAllAssets(): Promise<void> {
-    const allAssets = this.listAssets();
+    const allAssets = this.listAssets({
+      preload: true
+    });
     const total = allAssets.length;
     let count = 0;
 
