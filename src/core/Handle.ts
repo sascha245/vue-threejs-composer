@@ -9,6 +9,9 @@ export class Handle {
   private _onUnload = new EventDispatcher<() => Promise<void>>();
   private _onDeactivate = new EventDispatcher<() => Promise<void>>();
 
+  private _unloadTimeout = 0;
+  private _unloadTimeoutHandle: number | null = null;
+
   public get queue() {
     return this._queue;
   }
@@ -24,9 +27,19 @@ export class Handle {
   public get onDeactivate() {
     return this._onDeactivate;
   }
+  public get unloadTimeout() {
+    return this._unloadTimeout;
+  }
+  public set unloadTimeout(val: number) {
+    this._unloadTimeout = val;
+  }
 
   public use(): Promise<void> {
     if (this._usages++ === 0) {
+      if (this._unloadTimeoutHandle) {
+        clearTimeout(this._unloadTimeoutHandle);
+        this._unloadTimeoutHandle = null;
+      }
       this._queue = this.load();
       this._queue = this.activate();
     }
@@ -34,8 +47,22 @@ export class Handle {
   }
   public unuse(): Promise<void> {
     if (this._usages > 0 && --this._usages === 0) {
-      this._queue = this.unload();
-      this._queue = this.deactivate();
+      const updateQueue = () => {
+        this._queue = this.unload();
+        this._queue = this.deactivate();
+      };
+
+      // if there is a timeout, we wait until the timeout is over before unloading / disposing the bundle
+      if (this._unloadTimeout) {
+        this._unloadTimeoutHandle = setTimeout(
+          updateQueue,
+          this._unloadTimeout
+        );
+      }
+      // else we dispose directly
+      else {
+        updateQueue();
+      }
     }
     return this._queue;
   }
@@ -73,4 +100,6 @@ export class Handle {
       return Promise.all(p).then(() => Promise.resolve());
     });
   }
+
+  protected handleUnload() {}
 }

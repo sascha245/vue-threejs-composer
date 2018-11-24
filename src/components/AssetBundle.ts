@@ -13,6 +13,9 @@ export class AssetBundle extends Mixins(AppComponent) {
   @Prop({ type: Boolean, default: false })
   public preload!: boolean;
 
+  @Prop({ type: Number, default: 0 })
+  public timeout!: number;
+
   @Prop({ type: [String, Array], default: () => [] })
   public dependencies!: string | string[];
 
@@ -31,6 +34,7 @@ export class AssetBundle extends Mixins(AppComponent) {
     this.m_bundle.onLoad.on(this.onLoad);
     this.m_bundle.onUnload.on(this.onUnload);
     this.m_bundle.preload = this.preload;
+    this.m_bundle.unloadTimeout = this.timeout;
 
     Provider.setValue(this.provideBundle, this.m_bundle);
   }

@@ -24,13 +24,15 @@
       <three>
         <renderer :canvas="canvas" :camera="activeCamera" :scene="activeScene" antialias shadows/>
 
-        <asset-bundle name="PolygonMini" preload>
+        <asset-bundle name="PolygonMini" preload :timeout="30000">
           <texture name="PolygonMini_Tex" src="/assets/textures/PolygonMinis_Texture_01.png"/>
 
           <standard-material name="PolygonMini_Mat" map="PolygonMini_Tex"/>
 
           <model name="PM_column" src="/assets/models/SM_Tile_Hex_Column_02.fbx" materials="PolygonMini_Mat"/>
           <model name="PM_flat" src="/assets/models/SM_Tile_Hex_Flat_01.fbx" materials="PolygonMini_Mat"/>
+
+          <Model name="Mixamo_YBot" src="/assets/models/ybot.fbx"/>
         </asset-bundle>
 
         <asset-bundle name="Forms">

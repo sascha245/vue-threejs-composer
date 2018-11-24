@@ -25,11 +25,6 @@ export default new Router({
       component: Demo,
       name: "demo",
       path: "/demo"
-    },
-    {
-      component: GettingStarted,
-      name: "getting-started",
-      path: "/getting-started"
     }
   ]
 });
