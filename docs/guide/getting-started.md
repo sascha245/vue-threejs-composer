@@ -271,7 +271,7 @@ Let's start by importing the FBXLoader:
 import FBXLoader from "three-fbxloader-offical";
 import { Loader } from 'vue-threejs-composer'
 
-Loader.register('fbx', FbxLoader);
+Loader.register('fbx', FBXLoader);
 ```
 
 You can use the package [three-fbxloader-offical](https://www.npmjs.com/package/three-fbxloader-offical) to include the FBXLoader. The spelling may be wrong but the package works fine.
